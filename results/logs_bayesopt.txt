@@ -1,0 +1,12 @@
+﻿Tuning: xgboost
+  trial   0: top-1 0.8475  macro-F1 0.9045  (64s)
+  trial   1: top-1 0.8537  macro-F1 0.9125  (122s)
+  trial   2: top-1 0.8526  macro-F1 0.9114  (58s)
+  trial   3: top-1 0.8538  macro-F1 0.9107  (42s)
+  trial   4: top-1 0.8544  macro-F1 0.9132  (44s)
+  trial   5: top-1 0.8505  macro-F1 0.9097  (63s)
+  trial   6: top-1 0.8497  macro-F1 0.9078  (44s)
+  trial   7: top-1 0.8548  macro-F1 0.9129  (46s)
+  trial   8: top-1 0.8540  macro-F1 0.9129  (67s)
+  trial   9: top-1 0.8541  macro-F1 0.9114  (83s)
+  trial  10: top-1 0.8499  macro-F1 0.9059  (19s)
