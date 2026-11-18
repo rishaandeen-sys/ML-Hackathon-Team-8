@@ -1,0 +1,26 @@
+# --- raw dataset (supplied by the organisers, ~91 MB; see README) ---
+data/raw/
+data/processed/
+
+# --- python ---
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# --- os / editor ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# --- large or regenerable outputs ---
+*.log
+optuna_study.db
+
+# --- per-experiment model artifacts (regenerable via scripts/03 and 04) ---
+# KNN stores its training rows (31 MB) and the forests are larger still.
+# The deployed bundle written by scripts/07 IS committed:
+#   artifacts/pathsnap_model.joblib, inference_config.json, manifest.json
+artifacts/models/

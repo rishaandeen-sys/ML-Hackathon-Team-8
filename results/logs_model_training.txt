@@ -1,0 +1,37 @@
+﻿Loading candidate tables...
+  train: 1,270,733 rows / 80 trips
+  test : 140,155 rows / 10 trips
+
+=== logistic_regression (Linear / probabilistic) ===
+  fold 1: macro-F1 0.8703 | top-1 0.8528 | log-loss 0.1999 | 13.8s
+  fold 2: macro-F1 0.8727 | top-1 0.8428 | log-loss 0.1813 | 10.4s
+  fold 3: macro-F1 0.8999 | top-1 0.9037 | log-loss 0.1437 | 60.5s
+  fold 4: macro-F1 0.8578 | top-1 0.8504 | log-loss 0.2303 | 9.1s
+  fold 5: macro-F1 0.8593 | top-1 0.8195 | log-loss 0.1969 | 7.9s
+  -> test top-1 0.8608 | macro-F1 0.8765 | log-loss 0.1802 | continuity 0.9345
+
+=== gaussian_nb (Probabilistic) ===
+  fold 1: macro-F1 0.7957 | top-1 0.8330 | log-loss 1.0448 | 2.4s
+  fold 2: macro-F1 0.8085 | top-1 0.8369 | log-loss 0.7074 | 2.5s
+  fold 3: macro-F1 0.7779 | top-1 0.8791 | log-loss 0.8629 | 2.4s
+  fold 4: macro-F1 0.7678 | top-1 0.8322 | log-loss 1.5880 | 2.5s
+  fold 5: macro-F1 0.7912 | top-1 0.7941 | log-loss 1.0014 | 2.3s
+  -> test top-1 0.8342 | macro-F1 0.7826 | log-loss 1.0714 | continuity 0.9083
+
+=== knn_distance (Instance-based) ===
+  fold 1: macro-F1 0.9008 | top-1 0.8444 | log-loss 0.3115 | 0.3s
+  fold 2: macro-F1 0.9020 | top-1 0.8351 | log-loss 0.2477 | 0.3s
+  fold 3: macro-F1 0.9310 | top-1 0.8898 | log-loss 0.1834 | 0.3s
+  fold 4: macro-F1 0.8991 | top-1 0.8411 | log-loss 0.3901 | 0.3s
+  fold 5: macro-F1 0.8826 | top-1 0.8088 | log-loss 0.3172 | 1.0s
+  -> test top-1 0.8550 | macro-F1 0.9111 | log-loss 0.2263 | continuity 0.9205
+
+=== decision_tree (Tree-based) ===
+  fold 1: macro-F1 0.8758 | top-1 0.8449 | log-loss 0.2324 | 77.3s
+  fold 2: macro-F1 0.8802 | top-1 0.8440 | log-loss 0.2021 | 45.4s
+  fold 3: macro-F1 0.9083 | top-1 0.8975 | log-loss 0.1342 | 75.4s
+  fold 4: macro-F1 0.8679 | top-1 0.8442 | log-loss 0.2617 | 78.6s
+  fold 5: macro-F1 0.8640 | top-1 0.8153 | log-loss 0.2390 | 76.3s
+  -> test top-1 0.8614 | macro-F1 0.8842 | log-loss 0.1855 | continuity 0.9231
+
+=== random_forest (Ensemble (bagging)) ===

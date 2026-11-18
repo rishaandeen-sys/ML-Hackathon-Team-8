@@ -1,0 +1,3 @@
+partition,n_trips,total_observations,obs_per_trip_mean,obs_per_trip_min,obs_per_trip_max,total_track_km,mean_speed_kmh,frac_dt_eq_1s,trips_with_gaps,mean_arcs,label_residual_median_m
+student_test,10,19160,1916.0,262,3958,296.96781626231484,53.527269728228326,0.9819896936551981,2,18504.1,4.744646310806274
+train,80,208417,2605.2125,361,19313,2978.415085891347,48.59956017688743,0.9383341170217598,45,48461.3,4.629270911216736

@@ -1,0 +1,128 @@
+﻿Building trip inventory...
+  train/00000001: 1315 obs, 165790 arcs
+  train/00000002: 7243 obs, 16139 arcs
+  train/00000003: 821 obs, 18028 arcs
+  train/00000004: 1064 obs, 15499 arcs
+  train/00000005: 1045 obs, 1579 arcs
+  train/00000006: 1450 obs, 6757 arcs
+  train/00000008: 3093 obs, 10421 arcs
+  train/00000010: 2711 obs, 15715 arcs
+  train/00000011: 2828 obs, 5393 arcs
+  train/00000012: 1608 obs, 38599 arcs
+  train/00000013: 2580 obs, 307392 arcs
+  train/00000014: 448 obs, 8288 arcs
+  train/00000016: 1305 obs, 15098 arcs
+  train/00000018: 379 obs, 11545 arcs
+  train/00000019: 2354 obs, 108517 arcs
+  train/00000020: 2353 obs, 5958 arcs
+  train/00000021: 15783 obs, 1510 arcs
+  train/00000022: 474 obs, 18982 arcs
+  train/00000024: 801 obs, 51609 arcs
+  train/00000025: 1179 obs, 85639 arcs
+  train/00000026: 361 obs, 5043 arcs
+  train/00000027: 694 obs, 5588 arcs
+  train/00000028: 3565 obs, 127216 arcs
+  train/00000029: 733 obs, 20868 arcs
+  train/00000031: 4245 obs, 125831 arcs
+  train/00000032: 2464 obs, 259437 arcs
+  train/00000033: 5844 obs, 6360 arcs
+  train/00000034: 3614 obs, 40971 arcs
+  train/00000035: 1643 obs, 35212 arcs
+  train/00000036: 1368 obs, 9619 arcs
+  train/00000037: 677 obs, 21744 arcs
+  train/00000038: 1287 obs, 42026 arcs
+  train/00000039: 363 obs, 2388 arcs
+  train/00000041: 1019 obs, 14317 arcs
+  train/00000042: 7739 obs, 101128 arcs
+  train/00000043: 2322 obs, 215620 arcs
+  train/00000044: 546 obs, 9209 arcs
+  train/00000045: 640 obs, 4335 arcs
+  train/00000046: 1401 obs, 649 arcs
+  train/00000047: 1272 obs, 39747 arcs
+  train/00000048: 1240 obs, 2592 arcs
+  train/00000050: 518 obs, 4576 arcs
+  train/00000051: 984 obs, 8494 arcs
+  train/00000053: 1304 obs, 148707 arcs
+  train/00000054: 19313 obs, 116916 arcs
+  train/00000055: 2472 obs, 198961 arcs
+  train/00000057: 1645 obs, 18777 arcs
+  train/00000058: 599 obs, 39383 arcs
+  train/00000060: 854 obs, 30077 arcs
+  train/00000061: 1430 obs, 10339 arcs
+  train/00000062: 3378 obs, 62836 arcs
+  train/00000063: 2781 obs, 5553 arcs
+  train/00000064: 2093 obs, 56986 arcs
+  train/00000066: 4325 obs, 20071 arcs
+  train/00000068: 747 obs, 7058 arcs
+  train/00000069: 2067 obs, 17193 arcs
+  train/00000070: 2076 obs, 3776 arcs
+  train/00000071: 850 obs, 14868 arcs
+  train/00000072: 969 obs, 7063 arcs
+  train/00000074: 1929 obs, 61055 arcs
+  train/00000075: 1628 obs, 2124 arcs
+  train/00000078: 2909 obs, 151458 arcs
+  train/00000079: 689 obs, 72116 arcs
+  train/00000080: 2510 obs, 18746 arcs
+  train/00000081: 3224 obs, 5048 arcs
+  train/00000082: 4268 obs, 31754 arcs
+  train/00000083: 1507 obs, 25393 arcs
+  train/00000084: 16031 obs, 50888 arcs
+  train/00000085: 1092 obs, 1554 arcs
+  train/00000086: 4143 obs, 237656 arcs
+  train/00000088: 876 obs, 24376 arcs
+  train/00000089: 1228 obs, 32823 arcs
+  train/00000090: 536 obs, 7942 arcs
+  train/00000092: 7892 obs, 53348 arcs
+  train/00000093: 1211 obs, 85122 arcs
+  train/00000095: 1551 obs, 3723 arcs
+  train/00000096: 3271 obs, 32276 arcs
+  train/00000097: 1740 obs, 48503 arcs
+  train/00000098: 5584 obs, 88137 arcs
+  train/00000099: 2322 obs, 72870 arcs
+  student_test/00000000: 2503 obs, 18196 arcs
+  student_test/00000007: 1354 obs, 4369 arcs
+  student_test/00000009: 1049 obs, 13106 arcs
+  student_test/00000040: 2995 obs, 27026 arcs
+  student_test/00000052: 262 obs, 3577 arcs
+  student_test/00000056: 3958 obs, 27631 arcs
+  student_test/00000065: 768 obs, 13184 arcs
+  student_test/00000076: 1486 obs, 56027 arcs
+  student_test/00000077: 3911 obs, 9622 arcs
+  student_test/00000091: 874 obs, 12303 arcs
+python.exe : C:\Users\Rishaan D\PathSnap\.venv\Lib\site-packages\folium\raster_layers.py:129: UserWarning: CartoDB 
+tiles now require an API key. Please provide one to continue using the tiles. You can request the key at 
+https://carto.com/basemaps/apikey/.
+At line:1 char:346
++ ... \PathSnap"; & ".venv\Scripts\python.exe" -I scripts\02_eda.py 2>&1 |  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (C:\Users\Rishaa...semaps/apikey/.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  tiles = tiles.build_url(fill_subdomain=False, scale_factor="{r}")  # type: ignore
+
+Running data-quality checks...
+
+Plotting...
+  figures -> C:\Users\Rishaan D\PathSnap\results\figures
+
+Building Folium map for a representative trip...
+  map -> C:\Users\Rishaan D\PathSnap\results\maps\eda_trip_00000095.html
+
+=== partition summary ===
+   partition  n_trips  total_observations  obs_per_trip_mean  obs_per_trip_min  obs_per_trip_max  total_track_km  mean_speed_kmh  frac_dt_eq_1s  trips_with_gaps  mean_arcs  label_residual_median_m
+student_test       10               19160          1916.0000               262              3958      296.967816        53.52727       0.981990                2    18504.1                 4.744646
+       train       80              208417          2605.2125               361             19313     2978.415086        48.59956       0.938334               45    48461.3                 4.629271
+
+=== data quality ===
+                                      0             1
+partition                         train  student_test
+total_observations               208417         19160
+nan_values_in_track                   0             0
+duplicate_timestamps                  0             0
+non_increasing_timestamps             0             0
+coordinates_out_of_range              0             0
+consecutive_identical_positions       6             0
+self_loop_arcs                       22             2
+arcs_with_invalid_node_id             0             0
+zero_length_arcs                    100             6
+route_arc_ids_out_of_range            0             0

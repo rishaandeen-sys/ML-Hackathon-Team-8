@@ -1,0 +1,3 @@
+partition,total_observations,nan_values_in_track,duplicate_timestamps,non_increasing_timestamps,coordinates_out_of_range,consecutive_identical_positions,self_loop_arcs,arcs_with_invalid_node_id,zero_length_arcs,route_arc_ids_out_of_range
+train,208417,0,0,0,0,6,22,0,100,0
+student_test,19160,0,0,0,0,0,2,0,6,0
