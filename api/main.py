@@ -228,6 +228,54 @@ def network_geometry(trip_id: str, max_arcs: int = 4000) -> dict:
             "n_arcs_returned": len(segs), "segments": segs}
 
 
+@app.get("/metrics")
+def metrics() -> dict:
+    """Experiment results for the UI's analytics view.
+
+    Served from the CSVs that scripts/03-05 actually wrote, so the dashboard
+    cannot display a number the experiments did not produce. Returns whatever
+    stages have been run; missing sections come back as null rather than
+    being invented.
+    """
+    import csv
+
+    results = ROOT / "results"
+
+    def read_csv(name: str):
+        path = results / name
+        if not path.exists():
+            return None
+        with open(path, newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+        for row in rows:
+            for k, v in row.items():
+                if v in ("", None):
+                    row[k] = None
+                    continue
+                try:
+                    row[k] = float(v) if ("." in v or "e" in v.lower()) else int(v)
+                except (ValueError, TypeError):
+                    pass
+        return rows
+
+    def read_json(name: str):
+        path = results / name
+        return json.loads(path.read_text()) if path.exists() else None
+
+    return {
+        "model_comparison": read_csv("model_comparison.csv"),
+        "cv_folds": read_csv("model_cv_folds.csv"),
+        "observation_outcomes": read_csv("observation_level_outcomes.csv"),
+        "confusion_matrices": read_csv("confusion_matrices.csv"),
+        "bayesopt_summary": read_csv("bayesopt_summary.csv"),
+        "bayesopt_trials": read_csv("bayesopt_trials.csv"),
+        "bayesopt_best": read_json("bayesopt_best_params.json"),
+        "hmm_summary": read_csv("hmm_comparison_summary.csv"),
+        "hmm_per_trip": read_csv("hmm_comparison_per_trip.csv"),
+        "candidate_generation": read_csv("candidate_generation_summary.csv"),
+    }
+
+
 @app.get("/logs")
 def logs(limit: int = 50) -> dict:
     """Recent requests, for showing the evaluator that traffic is real."""
