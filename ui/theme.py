@@ -73,7 +73,7 @@ def css() -> str:
 }}
 
 /* ---------- base ---------- */
-html, body, [class*="css"] {{
+html, body {{
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
 }}

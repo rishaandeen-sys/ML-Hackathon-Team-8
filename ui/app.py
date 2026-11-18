@@ -37,7 +37,9 @@ DEFAULT_API = os.environ.get("PATHSNAP_API", "http://localhost:8000")
 st.set_page_config(page_title="PathSnap — Map Matching",
                    page_icon="◈", layout="wide",
                    initial_sidebar_state="expanded")
-st.markdown(css(), unsafe_allow_html=True)
+# st.html bypasses the markdown parser entirely, so CSS cannot be
+# mangled by link/emphasis syntax inside selectors
+st.html(css())
 
 
 # ----------------------------------------------------------------- API client
@@ -79,16 +81,15 @@ def pct(x, nd=2):
 
 # --------------------------------------------------------------------- sidebar
 with st.sidebar:
-    st.markdown(
+    st.html(
         '<div class="ps-brandmark"><span class="dot"></span>PathSnap</div>'
         '<div style="font-size:1.08rem;font-weight:700;letter-spacing:-.02em;'
         'margin-bottom:3px">Map Matching</div>'
         '<div style="font-size:.80rem;color:var(--text-faint);line-height:1.45;'
         'margin-bottom:18px">Intelligent map matching &amp; route '
-        'reconstruction</div>', unsafe_allow_html=True)
+        'reconstruction</div>')
 
-    st.markdown('<div class="ps-panel-title">Connection</div>',
-                unsafe_allow_html=True)
+    st.html('<div class="ps-panel-title">Connection</div>')
     api_url = st.text_input("API endpoint", value=DEFAULT_API,
                             label_visibility="collapsed",
                             help="Address of the inference API on Laptop 1")
@@ -100,12 +101,12 @@ with st.sidebar:
         health_err = str(exc)
 
     if health:
-        st.markdown(
+        st.html(
             f'<div class="ps-status ps-ok" style="margin:9px 0 4px 0">'
             f'<span class="dot" style="width:7px;height:7px;border-radius:50%;'
             f'background:{EMERALD};box-shadow:0 0 9px {EMERALD}"></span>'
-            f'Connected</div>', unsafe_allow_html=True)
-        st.markdown(
+            f'Connected</div>')
+        st.html(
             f'<div style="font-family:JetBrains Mono,monospace;font-size:.70rem;'
             f'color:var(--text-faint);margin:9px 0 2px 0;line-height:1.7">'
             f'model &nbsp;<span style="color:var(--text-dim)">'
@@ -113,19 +114,18 @@ with st.sidebar:
             f'trips &nbsp;&nbsp;<span style="color:var(--text-dim)">'
             f'{health.get("n_trips", "—")}</span><br>'
             f'served <span style="color:var(--text-dim)">'
-            f'{health.get("requests_served", 0)}</span></div>',
-            unsafe_allow_html=True)
+            f'{health.get("requests_served", 0)}</span></div>')
     else:
-        st.markdown('<div class="ps-status ps-err" style="margin:9px 0">'
-                    'Disconnected</div>', unsafe_allow_html=True)
+        st.html('<div class="ps-status ps-err" style="margin:9px 0">'
+                    'Disconnected</div>')
 
     if st.button("Test connection", width="stretch"):
         fetch_trips.clear()
         fetch_metrics.clear()
         st.rerun()
 
-    st.markdown('<div style="height:14px"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="ps-panel-title">Map</div>', unsafe_allow_html=True)
+    st.html('<div style="height:14px"></div>')
+    st.html('<div class="ps-panel-title">Map</div>')
     basemap_name = st.selectbox("Basemap", list(BASEMAPS), index=0,
                                 label_visibility="collapsed")
 
@@ -136,9 +136,8 @@ with st.sidebar:
                                  help="Served only when explicitly requested")
     show_network = st.checkbox("Road network context", value=False)
 
-    st.markdown('<div style="height:14px"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="ps-panel-title">Inference</div>',
-                unsafe_allow_html=True)
+    st.html('<div style="height:14px"></div>')
+    st.html('<div class="ps-panel-title">Inference</div>')
     run_hmm = st.checkbox("Apply HMM / Viterbi decoding", value=True,
                           help="Turn off to see classifier-only output")
 
@@ -150,10 +149,9 @@ with st.sidebar:
             f'<span style="color:var(--text-dim)">{v}</span></div>'
             for k, v in list(d.items())[:6])
         with st.expander("Decoder configuration", expanded=False):
-            st.markdown(
+            st.html(
                 f'<div style="font-family:JetBrains Mono,monospace;'
-                f'font-size:.70rem;line-height:1.85">{rows}</div>',
-                unsafe_allow_html=True)
+                f'font-size:.70rem;line-height:1.85">{rows}</div>')
 
 
 # ------------------------------------------------------------------- header
@@ -164,7 +162,7 @@ model_chip = (
     f'<span class="ps-status ps-wait" style="margin-left:8px">'
     f'{health.get("model", "—")}</span>' if health else "")
 
-st.markdown(
+st.html(
     f'<div class="ps-hero">'
     f'<div class="ps-brandmark"><span class="dot"></span>PathSnap</div>'
     f'<h1>Map Matching &amp; Route Reconstruction</h1>'
@@ -172,10 +170,10 @@ st.markdown(
     f'travelled from a noisy GPS trace, by ranking candidate road segments and '
     f'decoding the most likely connected sequence.</div>'
     f'<div style="margin-top:15px">{status_chip}{model_chip}</div>'
-    f'</div>', unsafe_allow_html=True)
+    f'</div>')
 
 if not health:
-    st.markdown(
+    st.html(
         f'<div class="ps-panel"><div class="ps-panel-title">Not connected</div>'
         f'<div style="color:var(--text-dim);font-size:.90rem;line-height:1.65">'
         f'Could not reach <span class="mono" style="color:var(--accent)">'
@@ -184,7 +182,7 @@ if not health:
         f'background:rgba(10,14,26,.7);border:1px solid var(--border);'
         f'border-radius:10px;padding:13px 15px;margin-top:13px;'
         f'color:var(--accent)">uvicorn api.main:app --host 0.0.0.0 --port 8000'
-        f'</div></div>', unsafe_allow_html=True)
+        f'</div></div>')
     if health_err:
         with st.expander("Error detail"):
             st.code(health_err)
@@ -203,20 +201,18 @@ total_nodes = int(tdf.n_nodes.sum())
 total_arcs = int(tdf.n_arcs.sum())
 mean_dur = float(tdf.duration_s.mean())
 
-st.markdown('<div class="ps-panel-title">Evaluation set</div>',
-            unsafe_allow_html=True)
-st.markdown(
+st.html('<div class="ps-panel-title">Evaluation set</div>')
+st.html(
     '<div class="ps-grid">'
     + metric_card("Evaluation trips", f"{len(tdf)}", spark=ACCENT)
     + metric_card("GPS observations", f"{total_obs:,}", spark=VIOLET)
     + metric_card("Network nodes", f"{total_nodes:,}", spark=EMERALD)
     + metric_card("Network arcs", f"{total_arcs:,}", spark=AMBER)
     + metric_card("Mean duration", fmt_duration(mean_dur), spark=ROSE)
-    + '</div>', unsafe_allow_html=True)
+    + '</div>')
 
 # -------------------------------------------------------------- trip selection
-st.markdown('<div class="ps-panel-title">Select a trip</div>',
-            unsafe_allow_html=True)
+st.html('<div class="ps-panel-title">Select a trip</div>')
 sel_col, btn_col = st.columns([3, 1])
 with sel_col:
     options = list(tdf.trip_id)
@@ -232,14 +228,14 @@ with btn_col:
                    width="stretch")
 
 row = tdf[tdf.trip_id == selected].iloc[0]
-st.markdown(
+st.html(
     '<div class="ps-grid" style="margin-top:4px">'
     + metric_card("Trip", str(row.trip_id), spark=ACCENT)
     + metric_card("GPS points", f"{int(row.n_observations):,}", spark=VIOLET)
     + metric_card("Duration", fmt_duration(row.duration_s), spark=EMERALD)
     + metric_card("Network arcs", f"{int(row.n_arcs):,}", spark=AMBER)
     + metric_card("Network nodes", f"{int(row.n_nodes):,}", spark=ROSE)
-    + '</div>', unsafe_allow_html=True)
+    + '</div>')
 
 for key in ("result", "elapsed", "network", "result_trip"):
     st.session_state.setdefault(key, None)
@@ -261,14 +257,13 @@ if go:
 
 res = st.session_state.result
 if res is None:
-    st.markdown(
+    st.html(
         '<div class="ps-panel" style="text-align:center;padding:46px 22px">'
         '<div style="font-size:2.1rem;opacity:.26;margin-bottom:10px">◈</div>'
         '<div style="color:var(--text-dim);font-size:.95rem;font-weight:600">'
         'No route reconstructed yet</div>'
         '<div style="color:var(--text-faint);font-size:.85rem;margin-top:7px">'
-        'Select a trip above and press Reconstruct route.</div></div>',
-        unsafe_allow_html=True)
+        'Select a trip above and press Reconstruct route.</div></div>')
     st.stop()
 
 # ------------------------------------------------------------------- results
@@ -277,9 +272,9 @@ clf_acc = ev.get("classifier_top1_accuracy")
 hmm_acc = ev.get("hmm_top1_accuracy")
 improve = ev.get("hmm_improvement_pp")
 
-st.markdown(f'<div class="ps-panel-title">Results — trip '
-            f'{res["trip_id"]}</div>', unsafe_allow_html=True)
-st.markdown(
+st.html(f'<div class="ps-panel-title">Results — trip '
+            f'{res["trip_id"]}</div>')
+st.html(
     '<div class="ps-grid">'
     + metric_card("Top-1 accuracy", pct(hmm_acc), spark=ACCENT,
                   delta=(None if improve is None else f"{improve:+.2f} pp vs classifier"),
@@ -295,7 +290,7 @@ st.markdown(
                   delta=(f"{st.session_state.elapsed:.2f}s round trip"
                          if st.session_state.elapsed else None),
                   delta_kind="flat")
-    + '</div>', unsafe_allow_html=True)
+    + '</div>')
 
 tab_map, tab_perf, tab_trip, tab_raw = st.tabs(
     ["Map", "Model performance", "Trip analysis", "API response"])
@@ -313,7 +308,7 @@ with tab_map:
         entries.append(("Reference route", MAP_COLOURS["reference"], False))
     if show_network and st.session_state.network:
         entries.append(("Road network", MAP_COLOURS["network"], False))
-    st.markdown(legend(entries), unsafe_allow_html=True)
+    st.html(legend(entries))
 
     poly = res["predicted_route"]["polyline"]
     gps_pts = (res.get("gps") or {}).get("points") or []
@@ -392,19 +387,18 @@ with tab_map:
 with tab_perf:
     metrics = fetch_metrics(api_url)
     if not metrics:
-        st.markdown('<div class="ps-panel"><div class="ps-panel-title">'
+        st.html('<div class="ps-panel"><div class="ps-panel-title">'
                     'Unavailable</div><div style="color:var(--text-dim);'
                     'font-size:.88rem">The API did not return experiment '
                     'metrics. Run the training stages to populate them.</div>'
-                    '</div>', unsafe_allow_html=True)
+                    '</div>')
     else:
         comp = metrics.get("model_comparison")
         if comp:
             cdf = pd.DataFrame(comp).sort_values("test_top1_accuracy",
                                                  ascending=False)
-            st.markdown('<div class="ps-panel-title">Model comparison — '
-                        'student-testing partition</div>',
-                        unsafe_allow_html=True)
+            st.html('<div class="ps-panel-title">Model comparison — '
+                        'student-testing partition</div>')
             chart = cdf.set_index("model")[["test_top1_accuracy",
                                             "cv_macro_f1_mean",
                                             "test_macro_f1"]]
@@ -424,13 +418,13 @@ with tab_perf:
         hmm = metrics.get("hmm_summary")
         if hmm:
             hdf = pd.DataFrame(hmm)
-            st.markdown('<div class="ps-panel-title">Classifier only vs '
-                        'classifier + HMM</div>', unsafe_allow_html=True)
+            st.html('<div class="ps-panel-title">Classifier only vs '
+                        'classifier + HMM</div>')
             clf_row = hdf[hdf.stage == "classifier_only"].iloc[0]
             hmm_row = hdf[hdf.stage == "classifier_plus_hmm"].iloc[0]
             gain = (hmm_row.top1_accuracy_weighted
                     - clf_row.top1_accuracy_weighted) * 100
-            st.markdown(
+            st.html(
                 '<div class="ps-grid">'
                 + metric_card("Classifier only",
                               pct(clf_row.top1_accuracy_weighted), spark=AMBER)
@@ -441,14 +435,14 @@ with tab_perf:
                               pct(hmm_row.route_continuity), spark=EMERALD)
                 + metric_card("Arc-set Jaccard",
                               pct(hmm_row.arc_set_jaccard), spark=VIOLET)
-                + '</div>', unsafe_allow_html=True)
+                + '</div>')
 
         per_trip = metrics.get("hmm_per_trip")
         if per_trip:
             pdf = pd.DataFrame(per_trip)
             pdf["trip"] = pdf.trip_id.apply(lambda t: f"{int(t):08d}")
-            st.markdown('<div class="ps-panel-title">Per-trip effect of '
-                        'Viterbi decoding</div>', unsafe_allow_html=True)
+            st.html('<div class="ps-panel-title">Per-trip effect of '
+                        'Viterbi decoding</div>')
             st.bar_chart(
                 pdf.set_index("trip")[["classifier_top1_accuracy",
                                        "hmm_top1_accuracy"]].rename(
@@ -459,8 +453,8 @@ with tab_perf:
         bo = metrics.get("bayesopt_summary")
         if bo:
             bdf = pd.DataFrame(bo)
-            st.markdown('<div class="ps-panel-title">Bayesian hyperparameter '
-                        'optimisation</div>', unsafe_allow_html=True)
+            st.html('<div class="ps-panel-title">Bayesian hyperparameter '
+                        'optimisation</div>')
             cols = [c for c in ["variant", "cv_top1_accuracy", "cv_macro_f1",
                                 "test_top1_accuracy", "test_macro_f1",
                                 "test_log_loss", "train_seconds"]
@@ -487,9 +481,8 @@ with tab_trip:
     diag = res.get("diagnostics") or {}
     timings = res.get("timings") or {}
 
-    st.markdown('<div class="ps-panel-title">Reconstruction detail</div>',
-                unsafe_allow_html=True)
-    st.markdown(
+    st.html('<div class="ps-panel-title">Reconstruction detail</div>')
+    st.html(
         '<div class="ps-grid">'
         + metric_card("Observations", f"{res['n_observations']:,}", spark=ACCENT)
         + metric_card("Mean candidates / obs",
@@ -503,12 +496,11 @@ with tab_trip:
         + metric_card("Unreachable transitions",
                       f"{int(diag.get('hmm_unreachable_transitions', 0) or 0):,}",
                       spark=ROSE)
-        + '</div>', unsafe_allow_html=True)
+        + '</div>')
 
     c1, c2 = st.columns(2)
     with c1:
-        st.markdown('<div class="ps-panel-title">Accuracy breakdown</div>',
-                    unsafe_allow_html=True)
+        st.html('<div class="ps-panel-title">Accuracy breakdown</div>')
         acc_rows = [
             ("Classifier top-1", pct(ev.get("classifier_top1_accuracy"))),
             ("HMM top-1", pct(ev.get("hmm_top1_accuracy"))),
@@ -521,8 +513,7 @@ with tab_trip:
         st.dataframe(pd.DataFrame(acc_rows, columns=["Metric", "Value"]),
                      hide_index=True, width="stretch")
     with c2:
-        st.markdown('<div class="ps-panel-title">Pipeline timings</div>',
-                    unsafe_allow_html=True)
+        st.html('<div class="ps-panel-title">Pipeline timings</div>')
         tim = pd.DataFrame(
             [(k.replace("_s", "").replace("_", " ").title(), f"{v:.3f} s")
              for k, v in timings.items()], columns=["Stage", "Seconds"])
@@ -552,13 +543,13 @@ with tab_trip:
 
 # ------------------------------------------------------------------- raw tab
 with tab_raw:
-    st.markdown(
+    st.html(
         f'<div style="font-family:JetBrains Mono,monospace;font-size:.76rem;'
         f'color:var(--text-faint);margin-bottom:11px">'
         f'model <span style="color:var(--accent)">{res.get("model")}</span>'
         f' &nbsp;·&nbsp; served '
         f'<span style="color:var(--text-dim)">{res.get("served_at", "")}</span>'
-        f'</div>', unsafe_allow_html=True)
+        f'</div>')
     st.json({k: v for k, v in res.items()
              if k not in ("gps", "per_observation")}, expanded=False)
     with st.expander("Per-observation arrays (large)"):
