@@ -99,7 +99,7 @@ def P(text, style="body"):
 
 
 def bullets(items, style="body"):
-    return [Paragraph(f"&bull;&nbsp;&nbsp;{t}", S[style]) for t in items]
+    return [Paragraph(f"-&nbsp;&nbsp;{t}", S[style]) for t in items]
 
 
 def table(rows, widths, header=True, align_right=(), zebra=True):
@@ -261,9 +261,9 @@ def main() -> None:
     meta_rule.setStyle(TableStyle([("LINEABOVE", (0, 0), (-1, -1), 1.4, ACCENT)]))
     F.append(meta_rule)
     F.append(Spacer(1, 10))
-    F.append(P(f"Team 8 &nbsp;&bull;&nbsp; {date.today().strftime('%d %B %Y')}",
+    F.append(P(f"Team 8  |  {date.today().strftime('%d %B %Y')}",
                "cover_meta"))
-    F.append(P("UE24CS352A Machine Learning &nbsp;&bull;&nbsp; "
+    F.append(P("UE24CS352A Machine Learning  |  "
                "PES University, Dept. of CSE (RR Campus)", "cover_meta"))
 
     F.append(Spacer(1, 26 * mm))
@@ -301,10 +301,10 @@ def main() -> None:
     F.append(Spacer(1, 7))
 
     F.extend(callout(
-        "Key fact &mdash; arcs are directed",
+        "Key fact - arcs are directed",
         "A two-way street appears twice, with identical geometry and opposite "
         "bearing, and the reference route is a sequence of <i>directed</i> arc ids. "
-        "Direction of travel is therefore part of what has to be predicted &mdash; a "
+        "Direction of travel is therefore part of what has to be predicted - a "
         "fact that drives the whole feature design in section 4."))
 
     F.append(P("1.1 Partitions", "h2"))
