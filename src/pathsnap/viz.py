@@ -26,14 +26,16 @@ def _centre(trip):
 
 
 def _arc_latlon(network, arc_ids):
-    """[[lat, lon], [lat, lon]] pairs for a list of arc ids."""
+    """[[lat, lon], [lat, lon]] pairs for a list of arc ids, rounded for size."""
     out = []
     for a in np.asarray(arc_ids):
         if a < 0:
             continue
         u, v = network.arcs[int(a)]
-        out.append([[network.nodes_lonlat[u, 1], network.nodes_lonlat[u, 0]],
-                    [network.nodes_lonlat[v, 1], network.nodes_lonlat[v, 0]]])
+        out.append([[round(float(network.nodes_lonlat[u, 1]), 6),
+                     round(float(network.nodes_lonlat[u, 0]), 6)],
+                    [round(float(network.nodes_lonlat[v, 1]), 6),
+                     round(float(network.nodes_lonlat[v, 0]), 6)]])
     return out
 
 
@@ -46,9 +48,14 @@ def _collapse(seq):
     return seq[np.concatenate([[True], seq[1:] != seq[:-1]])]
 
 
+#: OpenStreetMap needs no API key.  CartoDB's tiles started requiring one,
+#: which would leave every saved map with a blank background.
+TILES = "OpenStreetMap"
+
+
 def folium_trip_map(trip, network=None, predicted_arcs=None,
                     classifier_arcs=None, title: str = "",
-                    network_sample: int = 6000, gps_sample: int = 1):
+                    network_sample: int = 5000, gps_sample: int | None = None):
     """Interactive map of one trip with toggleable layers.
 
     Parameters
@@ -64,19 +71,21 @@ def folium_trip_map(trip, network=None, predicted_arcs=None,
         from .network import build_network
         network = build_network(trip)
 
-    m = folium.Map(location=_centre(trip), zoom_start=14, tiles="cartodbpositron",
+    # keep the saved HTML manageable: one marker per ~1500 observations
+    if gps_sample is None:
+        gps_sample = max(1, trip.n_obs // 1500)
+
+    m = folium.Map(location=_centre(trip), zoom_start=14, tiles=TILES,
                    control_scale=True)
 
     # --- road network context (sampled: full networks reach 165 k arcs)
     net_layer = folium.FeatureGroup(name="Road network", show=True)
-    n_arcs = network.n_arcs
-    step = max(1, n_arcs // network_sample)
-    for a in range(0, n_arcs, step):
-        u, v = network.arcs[a]
-        folium.PolyLine(
-            [[network.nodes_lonlat[u, 1], network.nodes_lonlat[u, 0]],
-             [network.nodes_lonlat[v, 1], network.nodes_lonlat[v, 0]]],
-            color=COLOURS["network"], weight=1, opacity=0.45).add_to(net_layer)
+    step = max(1, network.n_arcs // network_sample)
+    # a single multi-polyline: thousands of separate PolyLine objects would
+    # inflate the saved HTML by an order of magnitude
+    folium.PolyLine(_arc_latlon(network, np.arange(0, network.n_arcs, step)),
+                    color=COLOURS["network"], weight=1,
+                    opacity=0.45).add_to(net_layer)
     net_layer.add_to(m)
 
     # --- raw GPS observations
@@ -84,12 +93,13 @@ def folium_trip_map(trip, network=None, predicted_arcs=None,
     pts = trip.track[::gps_sample]
     for i, (lon, lat, ts) in enumerate(pts):
         folium.CircleMarker(
-            [lat, lon], radius=2, color=COLOURS["gps"], fill=True,
-            fill_opacity=0.7, weight=0,
+            [round(float(lat), 6), round(float(lon), 6)], radius=2,
+            color=COLOURS["gps"], fill=True, fill_opacity=0.7, weight=0,
             tooltip=f"obs {i * gps_sample} | t={ts:.0f}s").add_to(gps_layer)
     gps_layer.add_to(m)
 
-    folium.PolyLine([[lat, lon] for lon, lat, _ in trip.track],
+    folium.PolyLine([[round(float(lat), 6), round(float(lon), 6)]
+                     for lon, lat, _ in trip.track],
                     color=COLOURS["gps"], weight=1.5, opacity=0.5,
                     tooltip="GPS trajectory (raw order)").add_to(
         folium.FeatureGroup(name="GPS trajectory line", show=False).add_to(m))
@@ -97,25 +107,26 @@ def folium_trip_map(trip, network=None, predicted_arcs=None,
     # --- reference route
     if trip.route is not None and len(trip.route):
         ref = folium.FeatureGroup(name="Reference route", show=True)
-        for seg in _arc_latlon(network, trip.route):
-            folium.PolyLine(seg, color=COLOURS["reference"], weight=5,
-                            opacity=0.75).add_to(ref)
+        folium.PolyLine(_arc_latlon(network, trip.route),
+                        color=COLOURS["reference"], weight=5, opacity=0.75,
+                        tooltip="reference route").add_to(ref)
         ref.add_to(m)
 
     # --- classifier-only prediction
     if classifier_arcs is not None:
         lay = folium.FeatureGroup(name="Classifier-only prediction", show=False)
-        for seg in _arc_latlon(network, _collapse(classifier_arcs)):
-            folium.PolyLine(seg, color=COLOURS["classifier"], weight=4,
-                            opacity=0.8, dash_array="6,6").add_to(lay)
+        folium.PolyLine(_arc_latlon(network, _collapse(classifier_arcs)),
+                        color=COLOURS["classifier"], weight=4, opacity=0.8,
+                        dash_array="6,6",
+                        tooltip="classifier only").add_to(lay)
         lay.add_to(m)
 
     # --- final predicted route
     if predicted_arcs is not None:
         lay = folium.FeatureGroup(name="Predicted route (HMM + Viterbi)", show=True)
-        for seg in _arc_latlon(network, _collapse(predicted_arcs)):
-            folium.PolyLine(seg, color=COLOURS["predicted"], weight=4,
-                            opacity=0.9).add_to(lay)
+        folium.PolyLine(_arc_latlon(network, _collapse(predicted_arcs)),
+                        color=COLOURS["predicted"], weight=4, opacity=0.9,
+                        tooltip="predicted route").add_to(lay)
         lay.add_to(m)
 
     folium.Marker([trip.track[0, 1], trip.track[0, 0]], tooltip="start",

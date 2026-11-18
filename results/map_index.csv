@@ -1,0 +1,3 @@
+partition,trip_id,file,n_observations,classifier_top1,hmm_top1,classifier_continuity,hmm_continuity
+student_test,00000052,match_student_test_00000052.html,262,0.9618320610687023,0.9961832061068703,0.9386973180076629,0.9616858237547893
+student_test,00000007,match_student_test_00000007.html,1354,0.9231348907309721,0.9050489826676714,0.9948263118994827,1.0

@@ -158,7 +158,7 @@ with tab_map:
     else:
         centre = [49.87, 8.65]
 
-    m = folium.Map(location=centre, zoom_start=14, tiles="cartodbpositron",
+    m = folium.Map(location=centre, zoom_start=14, tiles="OpenStreetMap",
                    control_scale=True)
 
     net = st.session_state.get("network")
