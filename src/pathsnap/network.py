@@ -134,6 +134,44 @@ class RoadNetwork:
         return found
 
     # ------------------------------------------------------------- diagnostics
+    def shortest_path_arcs(self, source: int, target: int,
+                           limit_m: float) -> list[int] | None:
+        """Bounded Dijkstra returning the arc ids along the path, or None.
+
+        Used to expand a decoded arc sequence into a fully connected route:
+        at 1 Hz a vehicle can traverse a short arc entirely between two GPS
+        fixes, so consecutive decoded arcs are often connected *through* an
+        arc that no observation ever landed on.
+        """
+        if source == target:
+            return []
+        dist = {source: 0.0}
+        prev: dict[int, tuple[int, int]] = {}
+        heap = [(0.0, source)]
+        while heap:
+            d, u = heapq.heappop(heap)
+            if d > dist.get(u, np.inf) or d > limit_m:
+                if d > limit_m:
+                    return None
+                continue
+            if u == target:
+                path, node = [], target
+                while node != source:
+                    pnode, arc = prev[node]
+                    path.append(arc)
+                    node = pnode
+                return path[::-1]
+            nbrs, weights, arc_ids = self.successors(u)
+            for v, w, a in zip(nbrs, weights, arc_ids):
+                nd = d + w
+                if nd > limit_m:
+                    continue
+                if nd < dist.get(v, np.inf):
+                    dist[v] = nd
+                    prev[int(v)] = (int(u), int(a))
+                    heapq.heappush(heap, (nd, int(v)))
+        return None
+
     def connectivity_summary(self) -> dict:
         """Weakly-connected-component statistics, for the EDA report."""
         from scipy.sparse import coo_matrix

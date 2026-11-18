@@ -162,8 +162,13 @@ def predict(req: PredictRequest) -> dict:
         "decoder": STATE["config"],
         "n_observations": int(result.n_observations),
         "predicted_route": {
+            # the connected route: decoded arcs with intermediate arcs filled in
+            "arc_ids": [int(a) for a in result.route_arc_sequence("expanded")],
+            "polyline": result.route_polyline("expanded"),
+        },
+        "decoded_route": {
+            # the raw per-observation Viterbi decisions, before expansion
             "arc_ids": [int(a) for a in result.route_arc_sequence("hmm")],
-            "polyline": result.route_polyline("hmm"),
         },
         "classifier_only_route": {
             "arc_ids": [int(a) for a in result.route_arc_sequence("classifier")],

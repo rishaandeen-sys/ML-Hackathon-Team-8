@@ -32,21 +32,29 @@ class MatchResult:
     hmm_arcs: np.ndarray                 # Viterbi-decoded arc per observation
     scores: np.ndarray                   # top-1 classifier score per observation
     candidates_per_obs: np.ndarray
+    expanded_arcs: np.ndarray | None = None   # route with intermediate arcs filled in
     timings: dict = field(default_factory=dict)
     diagnostics: dict = field(default_factory=dict)
     network: object = None
     trip: object = None
 
-    def route_arc_sequence(self, source: str = "hmm") -> np.ndarray:
-        """Collapsed arc sequence (consecutive duplicates removed)."""
-        seq = self.hmm_arcs if source == "hmm" else self.classifier_arcs
+    def route_arc_sequence(self, source: str = "expanded") -> np.ndarray:
+        """Collapsed arc sequence (consecutive duplicates removed).
+
+        "expanded" is the connected route: the decoded sequence with the
+        intermediate arcs filled in.  "hmm" and "classifier" are the raw
+        per-observation decisions.
+        """
+        if source == "expanded" and self.expanded_arcs is not None:
+            return np.asarray(self.expanded_arcs)
+        seq = self.hmm_arcs if source in ("hmm", "expanded") else self.classifier_arcs
         seq = np.asarray(seq)
         seq = seq[seq >= 0]
         if len(seq) == 0:
             return seq
         return seq[np.concatenate([[True], seq[1:] != seq[:-1]])]
 
-    def route_polyline(self, source: str = "hmm") -> list[list[float]]:
+    def route_polyline(self, source: str = "expanded") -> list[list[float]]:
         """[[lat, lon], ...] along the reconstructed route, for the UI."""
         arcs = self.route_arc_sequence(source)
         pts: list[list[float]] = []
@@ -58,6 +66,40 @@ class MatchResult:
                 pts.append(p1)
             pts.append(p2)
         return pts
+
+
+def expand_to_connected_route(arc_seq, network, max_fill_m: float = 2000.0):
+    """Fill the gaps in a decoded arc sequence with shortest paths.
+
+    At 1 Hz a vehicle can cross a short arc entirely between two fixes, so two
+    consecutive decoded arcs are often connected only *through* an arc that no
+    observation ever landed on.  Inserting those arcs turns a sequence of
+    per-observation decisions into a route that is actually drivable.
+
+    Returns (expanded arc sequence, number of gaps that could not be bridged).
+    """
+    arcs = np.asarray(arc_seq)
+    arcs = arcs[arcs >= 0]
+    if len(arcs) == 0:
+        return np.empty(0, dtype=np.int64), 0
+    arcs = arcs[np.concatenate([[True], arcs[1:] != arcs[:-1]])]
+
+    out = [int(arcs[0])]
+    unbridged = 0
+    for nxt in arcs[1:]:
+        nxt = int(nxt)
+        head = int(network.arcs[out[-1], 1])
+        tail = int(network.arcs[nxt, 0])
+        if head != tail:
+            path = network.shortest_path_arcs(head, tail, max_fill_m)
+            if path is None:
+                unbridged += 1
+            else:
+                out.extend(int(a) for a in path)
+        out.append(nxt)
+
+    out = np.asarray(out, dtype=np.int64)
+    return out[np.concatenate([[True], out[1:] != out[:-1]])], unbridged
 
 
 class PathSnapMatcher:
@@ -86,12 +128,13 @@ class PathSnapMatcher:
         if len(obs_idx) == 0:
             empty = np.full(T, -1, dtype=np.int64)
             return MatchResult(trip.trip_id, T, empty, empty.copy(),
-                               np.zeros(T), np.zeros(T, dtype=np.int64),
+                               np.zeros(T), np.zeros(T, dtype=np.int64), None,
                                timings, {"no_candidates": True}, network, trip)
 
         t0 = time.perf_counter()
-        X = pd.DataFrame(feats, columns=FEATURE_NAMES)
-        scores = self.model.predict_proba(X)[:, 1]
+        # the models are fitted on plain arrays, so pass one (a DataFrame here
+        # triggers a feature-name mismatch warning and buys nothing)
+        scores = self.model.predict_proba(feats)[:, 1]
         timings["classifier_s"] = time.perf_counter() - t0
 
         df = pd.DataFrame({"obs_idx": obs_idx, "arc_id": arc_id, "score": scores})
@@ -129,9 +172,19 @@ class PathSnapMatcher:
                 "hmm_route_continuity": route_continuity(hmm_arcs, network),
             })
 
+            t0 = time.perf_counter()
+            expanded, unbridged = expand_to_connected_route(hmm_arcs, network)
+            timings["expand_s"] = time.perf_counter() - t0
+            diagnostics.update({
+                "expanded_route_arcs": int(len(expanded)),
+                "expanded_unbridged_gaps": int(unbridged),
+                "expanded_route_continuity": route_continuity(expanded, network),
+            })
+
         timings["total_s"] = sum(v for k, v in timings.items() if k.endswith("_s"))
         return MatchResult(trip.trip_id, T, clf_arcs, hmm_arcs, clf_scores,
-                           counts, timings, diagnostics, network, trip)
+                           counts, expanded if run_hmm else None,
+                           timings, diagnostics, network, trip)
 
 
 def evaluate_against_reference(result: MatchResult, trip, network,
@@ -166,6 +219,15 @@ def evaluate_against_reference(result: MatchResult, trip, network,
         out[f"{name}_arc_set_precision"] = seq["arc_set_precision"]
         out[f"{name}_arc_set_recall"] = seq["arc_set_recall"]
         out[f"{name}_arc_set_jaccard"] = seq["arc_set_jaccard"]
+    if result.expanded_arcs is not None and len(result.expanded_arcs):
+        out["expanded_route_arcs"] = int(len(result.expanded_arcs))
+        out["expanded_route_continuity"] = route_continuity(result.expanded_arcs,
+                                                            network)
+        ref = set(int(a) for a in trip.route)
+        pred = set(int(a) for a in result.expanded_arcs)
+        inter = len(ref & pred)
+        out["expanded_arc_set_precision"] = inter / len(pred) if pred else float("nan")
+        out["expanded_arc_set_recall"] = inter / len(ref) if ref else float("nan")
     out["hmm_improvement_pp"] = (out["hmm_top1_accuracy"] -
                                  out["classifier_top1_accuracy"]) * 100
     return out
