@@ -94,21 +94,37 @@ The candidate miss rate of **0.2616%** on reliably-labelled training observation
 
 ### 3.1 Overall model comparison
 
-| model               | algorithm_family       | key_configuration                                 |   cv_macro_f1_mean |   test_top1_accuracy |   test_route_continuity |   test_macro_f1 |   test_log_loss |   inference_seconds |
-|:--------------------|:-----------------------|:--------------------------------------------------|-------------------:|---------------------:|------------------------:|----------------:|----------------:|--------------------:|
-| decision_tree       | Tree-based             | gini, max_depth=14, min_samples_leaf=50, balanced |             0.8793 |               0.8614 |                  0.9231 |          0.8842 |          0.1855 |              0.1008 |
-| logistic_regression | Linear / probabilistic | lbfgs, C=1.0, class_weight=balanced, standardised |             0.872  |               0.8608 |                  0.9345 |          0.8765 |          0.1802 |              0.1056 |
+| model                  | algorithm_family            | key_configuration                                               |   cv_macro_f1_mean |   test_top1_accuracy |   test_route_continuity |   test_macro_f1 |   test_log_loss |   inference_seconds |
+|:-----------------------|:----------------------------|:----------------------------------------------------------------|-------------------:|---------------------:|------------------------:|----------------:|----------------:|--------------------:|
+| mlp                    | Neural network              | hidden=(64, 32), relu, adam, early stopping, standardised       |             0.9068 |               0.8767 |                  0.9342 |          0.9206 |          0.0909 |              0.0725 |
+| xgboost                | Boosting (GBDT)             | 200 trees, lr=0.05, max_depth=7, scale_pos_weight tuned         |             0.914  |               0.8742 |                  0.9343 |          0.9249 |          0.0854 |              0.097  |
+| lightgbm               | Boosting (GBDT)             | 200 trees, lr=0.05, num_leaves=63, is_unbalance=True            |             0.8911 |               0.8736 |                  0.9333 |          0.898  |          0.1257 |              0.19   |
+| random_forest          | Ensemble (bagging)          | 200 trees, max_depth=20, min_samples_leaf=5, balanced_subsample |             0.9092 |               0.8711 |                  0.9305 |          0.9147 |          0.103  |              1.7745 |
+| hist_gradient_boosting | Boosting                    | lr=0.1, max_iter=300, max_leaf_nodes=31, early stopping         |             0.9122 |               0.8707 |                  0.9317 |          0.9225 |          0.089  |              0.6148 |
+| extra_trees            | Ensemble (randomised trees) | 200 trees, max_depth=20, min_samples_leaf=5                     |             0.8941 |               0.8643 |                  0.9269 |          0.8963 |          0.1337 |              1.7864 |
+| decision_tree          | Tree-based                  | gini, max_depth=14, min_samples_leaf=50, balanced               |             0.8793 |               0.8614 |                  0.9231 |          0.8842 |          0.1855 |              0.1144 |
+| logistic_regression    | Linear / probabilistic      | lbfgs, C=1.0, class_weight=balanced, standardised               |             0.872  |               0.8608 |                  0.9345 |          0.8765 |          0.1802 |              0.0389 |
+| knn_distance           | Instance-based              | k=15, distance-weighted, standardised, 150k-row subsample       |             0.9031 |               0.855  |                  0.9205 |          0.9111 |          0.2263 |             32.7458 |
+| gaussian_nb            | Probabilistic               | var_smoothing=1e-9, standardised                                |             0.7882 |               0.8342 |                  0.9083 |          0.7826 |          1.0714 |              0.0895 |
 
 
-2 models were trained and compared, spanning 2 algorithm families. Cross-validation is `GroupKFold(5)` grouped by trip, so no trip is split across folds.
+10 models were trained and compared, spanning 9 algorithm families. Cross-validation is `GroupKFold(5)` grouped by trip, so no trip is split across folds.
 
 
 ### 3.2 Per-fold scores
 
-| model               |      1 |      2 |      3 |      4 |      5 |
-|:--------------------|-------:|-------:|-------:|-------:|-------:|
-| decision_tree       | 0.8758 | 0.8802 | 0.9083 | 0.8679 | 0.864  |
-| logistic_regression | 0.8703 | 0.8727 | 0.8999 | 0.8578 | 0.8593 |
+| model                  |      1 |      2 |      3 |      4 |      5 |
+|:-----------------------|-------:|-------:|-------:|-------:|-------:|
+| decision_tree          | 0.8758 | 0.8802 | 0.9083 | 0.8679 | 0.864  |
+| extra_trees            | 0.8903 | 0.8933 | 0.9221 | 0.8843 | 0.8807 |
+| gaussian_nb            | 0.7957 | 0.8085 | 0.7779 | 0.7678 | 0.7912 |
+| hist_gradient_boosting | 0.9103 | 0.9157 | 0.9417 | 0.9    | 0.8935 |
+| knn_distance           | 0.9008 | 0.902  | 0.931  | 0.8991 | 0.8826 |
+| lightgbm               | 0.8881 | 0.8912 | 0.919  | 0.8776 | 0.8798 |
+| logistic_regression    | 0.8703 | 0.8727 | 0.8999 | 0.8578 | 0.8593 |
+| mlp                    | 0.9071 | 0.9081 | 0.9345 | 0.8955 | 0.8888 |
+| random_forest          | 0.9035 | 0.911  | 0.9367 | 0.9    | 0.8947 |
+| xgboost                | 0.9112 | 0.9162 | 0.9434 | 0.9043 | 0.8948 |
 
 
 ![Cross-validation macro F1 across all models](../figures/model_cv_macro_f1.png)
@@ -144,6 +160,156 @@ The candidate miss rate of **0.2616%** on reliably-labelled training observation
 ### 3.3 Per-model questions
 
 
+#### mlp — Neural network
+
+Configuration: `hidden=(64, 32), relu, adam, early stopping, standardised`
+
+
+| metric | value |
+|---|---|
+| CV macro F1 | 0.9068 ± 0.0156 |
+| CV top-1 accuracy | 0.8517 |
+| Student-test top-1 accuracy | 0.8767 |
+| Student-test macro F1 | 0.9206 |
+| Student-test precision / recall (macro) | 0.9277 / 0.9138 |
+| Student-test log loss | 0.0909 |
+| Route continuity | 0.9342 |
+| Train / inference time (s) | 46.4 / 0.07 |
+
+
+> **TEAM ANALYSIS REQUIRED — write this yourself:**
+> - Why is mlp suitable for the PathSnap problem?
+> - What are its strengths and limitations *for this task*?
+> - Which hyperparameters mattered, and what were their initial values?
+> - What loss or optimisation objective does it use?
+> - Did you observe overfitting or underfitting? What is the evidence (compare the CV and student-test columns above)?
+
+
+#### xgboost — Boosting (GBDT)
+
+Configuration: `200 trees, lr=0.05, max_depth=7, scale_pos_weight tuned`
+
+
+| metric | value |
+|---|---|
+| CV macro F1 | 0.9140 ± 0.0164 |
+| CV top-1 accuracy | 0.8578 |
+| Student-test top-1 accuracy | 0.8742 |
+| Student-test macro F1 | 0.9249 |
+| Student-test precision / recall (macro) | 0.9330 / 0.9172 |
+| Student-test log loss | 0.0854 |
+| Route continuity | 0.9343 |
+| Train / inference time (s) | 11.1 / 0.10 |
+
+
+> **TEAM ANALYSIS REQUIRED — write this yourself:**
+> - Why is xgboost suitable for the PathSnap problem?
+> - What are its strengths and limitations *for this task*?
+> - Which hyperparameters mattered, and what were their initial values?
+> - What loss or optimisation objective does it use?
+> - Did you observe overfitting or underfitting? What is the evidence (compare the CV and student-test columns above)?
+
+
+#### lightgbm — Boosting (GBDT)
+
+Configuration: `200 trees, lr=0.05, num_leaves=63, is_unbalance=True`
+
+
+| metric | value |
+|---|---|
+| CV macro F1 | 0.8911 ± 0.0148 |
+| CV top-1 accuracy | 0.8561 |
+| Student-test top-1 accuracy | 0.8736 |
+| Student-test macro F1 | 0.8980 |
+| Student-test precision / recall (macro) | 0.8615 / 0.9500 |
+| Student-test log loss | 0.1257 |
+| Route continuity | 0.9333 |
+| Train / inference time (s) | 6.9 / 0.19 |
+
+
+> **TEAM ANALYSIS REQUIRED — write this yourself:**
+> - Why is lightgbm suitable for the PathSnap problem?
+> - What are its strengths and limitations *for this task*?
+> - Which hyperparameters mattered, and what were their initial values?
+> - What loss or optimisation objective does it use?
+> - Did you observe overfitting or underfitting? What is the evidence (compare the CV and student-test columns above)?
+
+
+#### random_forest — Ensemble (bagging)
+
+Configuration: `200 trees, max_depth=20, min_samples_leaf=5, balanced_subsample`
+
+
+| metric | value |
+|---|---|
+| CV macro F1 | 0.9092 ± 0.0148 |
+| CV top-1 accuracy | 0.8569 |
+| Student-test top-1 accuracy | 0.8711 |
+| Student-test macro F1 | 0.9147 |
+| Student-test precision / recall (macro) | 0.8911 / 0.9433 |
+| Student-test log loss | 0.1030 |
+| Route continuity | 0.9305 |
+| Train / inference time (s) | 152.8 / 1.77 |
+
+
+> **TEAM ANALYSIS REQUIRED — write this yourself:**
+> - Why is random_forest suitable for the PathSnap problem?
+> - What are its strengths and limitations *for this task*?
+> - Which hyperparameters mattered, and what were their initial values?
+> - What loss or optimisation objective does it use?
+> - Did you observe overfitting or underfitting? What is the evidence (compare the CV and student-test columns above)?
+
+
+#### hist_gradient_boosting — Boosting
+
+Configuration: `lr=0.1, max_iter=300, max_leaf_nodes=31, early stopping`
+
+
+| metric | value |
+|---|---|
+| CV macro F1 | 0.9122 ± 0.0166 |
+| CV top-1 accuracy | 0.8549 |
+| Student-test top-1 accuracy | 0.8707 |
+| Student-test macro F1 | 0.9225 |
+| Student-test precision / recall (macro) | 0.9291 / 0.9162 |
+| Student-test log loss | 0.0890 |
+| Route continuity | 0.9317 |
+| Train / inference time (s) | 21.0 / 0.61 |
+
+
+> **TEAM ANALYSIS REQUIRED — write this yourself:**
+> - Why is hist_gradient_boosting suitable for the PathSnap problem?
+> - What are its strengths and limitations *for this task*?
+> - Which hyperparameters mattered, and what were their initial values?
+> - What loss or optimisation objective does it use?
+> - Did you observe overfitting or underfitting? What is the evidence (compare the CV and student-test columns above)?
+
+
+#### extra_trees — Ensemble (randomised trees)
+
+Configuration: `200 trees, max_depth=20, min_samples_leaf=5`
+
+
+| metric | value |
+|---|---|
+| CV macro F1 | 0.8941 ± 0.0147 |
+| CV top-1 accuracy | 0.8545 |
+| Student-test top-1 accuracy | 0.8643 |
+| Student-test macro F1 | 0.8963 |
+| Student-test precision / recall (macro) | 0.8616 / 0.9449 |
+| Student-test log loss | 0.1337 |
+| Route continuity | 0.9269 |
+| Train / inference time (s) | 70.6 / 1.79 |
+
+
+> **TEAM ANALYSIS REQUIRED — write this yourself:**
+> - Why is extra_trees suitable for the PathSnap problem?
+> - What are its strengths and limitations *for this task*?
+> - Which hyperparameters mattered, and what were their initial values?
+> - What loss or optimisation objective does it use?
+> - Did you observe overfitting or underfitting? What is the evidence (compare the CV and student-test columns above)?
+
+
 #### decision_tree — Tree-based
 
 Configuration: `gini, max_depth=14, min_samples_leaf=50, balanced`
@@ -158,7 +324,7 @@ Configuration: `gini, max_depth=14, min_samples_leaf=50, balanced`
 | Student-test precision / recall (macro) | 0.8456 / 0.9424 |
 | Student-test log loss | 0.1855 |
 | Route continuity | 0.9231 |
-| Train / inference time (s) | 74.3 / 0.10 |
+| Train / inference time (s) | 55.8 / 0.11 |
 
 
 > **TEAM ANALYSIS REQUIRED — write this yourself:**
@@ -183,11 +349,61 @@ Configuration: `lbfgs, C=1.0, class_weight=balanced, standardised`
 | Student-test precision / recall (macro) | 0.8370 / 0.9378 |
 | Student-test log loss | 0.1802 |
 | Route continuity | 0.9345 |
-| Train / inference time (s) | 16.9 / 0.11 |
+| Train / inference time (s) | 5.2 / 0.04 |
 
 
 > **TEAM ANALYSIS REQUIRED — write this yourself:**
 > - Why is logistic_regression suitable for the PathSnap problem?
+> - What are its strengths and limitations *for this task*?
+> - Which hyperparameters mattered, and what were their initial values?
+> - What loss or optimisation objective does it use?
+> - Did you observe overfitting or underfitting? What is the evidence (compare the CV and student-test columns above)?
+
+
+#### knn_distance — Instance-based
+
+Configuration: `k=15, distance-weighted, standardised, 150k-row subsample`
+
+
+| metric | value |
+|---|---|
+| CV macro F1 | 0.9031 ± 0.0156 |
+| CV top-1 accuracy | 0.8438 |
+| Student-test top-1 accuracy | 0.8550 |
+| Student-test macro F1 | 0.9111 |
+| Student-test precision / recall (macro) | 0.9106 / 0.9116 |
+| Student-test log loss | 0.2263 |
+| Route continuity | 0.9205 |
+| Train / inference time (s) | 1.1 / 32.75 |
+
+
+> **TEAM ANALYSIS REQUIRED — write this yourself:**
+> - Why is knn_distance suitable for the PathSnap problem?
+> - What are its strengths and limitations *for this task*?
+> - Which hyperparameters mattered, and what were their initial values?
+> - What loss or optimisation objective does it use?
+> - Did you observe overfitting or underfitting? What is the evidence (compare the CV and student-test columns above)?
+
+
+#### gaussian_nb — Probabilistic
+
+Configuration: `var_smoothing=1e-9, standardised`
+
+
+| metric | value |
+|---|---|
+| CV macro F1 | 0.7882 ± 0.0142 |
+| CV top-1 accuracy | 0.8351 |
+| Student-test top-1 accuracy | 0.8342 |
+| Student-test macro F1 | 0.7826 |
+| Student-test precision / recall (macro) | 0.7432 / 0.8942 |
+| Student-test log loss | 1.0714 |
+| Route continuity | 0.9083 |
+| Train / inference time (s) | 2.9 / 0.09 |
+
+
+> **TEAM ANALYSIS REQUIRED — write this yourself:**
+> - Why is gaussian_nb suitable for the PathSnap problem?
 > - What are its strengths and limitations *for this task*?
 > - Which hyperparameters mattered, and what were their initial values?
 > - What loss or optimisation objective does it use?
@@ -266,6 +482,11 @@ Configuration: `lbfgs, C=1.0, class_weight=balanced, standardised`
 ---
 
 ## 6. Geographical Visualisation Using Folium
+
+| partition    |   trip_id |   n_observations |   classifier_top1 |   hmm_top1 |   hmm_continuity |
+|:-------------|----------:|-----------------:|------------------:|-----------:|-----------------:|
+| student_test |        52 |              262 |            0.9618 |     0.9962 |           0.9617 |
+| student_test |         7 |             1354 |            0.9231 |     0.905  |           1      |
 
 
 Interactive maps: `results/maps/index.html`. Each map carries toggleable layers for the road network, raw GPS observations, the reference route, the classifier-only route and the predicted route, with a legend and layer control.

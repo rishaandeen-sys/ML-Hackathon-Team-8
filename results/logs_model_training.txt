@@ -60,3 +60,40 @@
 
 === mlp (Neural network) ===
   fold 1: macro-F1 0.9071 | top-1 0.8485 | log-loss 0.1205 | 230.4s
+  fold 2: macro-F1 0.9081 | top-1 0.8433 | log-loss 0.1022 | 146.9s
+  fold 3: macro-F1 0.9345 | top-1 0.8986 | log-loss 0.0726 | 85.6s
+  fold 4: macro-F1 0.8955 | top-1 0.8429 | log-loss 0.1511 | 33.2s
+  fold 5: macro-F1 0.8888 | top-1 0.8249 | log-loss 0.1274 | 28.4s
+  -> test top-1 0.8767 | macro-F1 0.9206 | log-loss 0.0909 | continuity 0.9342
+
+=== lightgbm (Boosting (GBDT)) ===
+  fold 1: macro-F1 0.8881 | top-1 0.8525 | log-loss 0.1554 | 5.7s
+  fold 2: macro-F1 0.8912 | top-1 0.8510 | log-loss 0.1331 | 5.9s
+  fold 3: macro-F1 0.9190 | top-1 0.9053 | log-loss 0.0961 | 5.8s
+  fold 4: macro-F1 0.8776 | top-1 0.8426 | log-loss 0.1780 | 5.6s
+  fold 5: macro-F1 0.8798 | top-1 0.8293 | log-loss 0.1440 | 5.8s
+  -> test top-1 0.8736 | macro-F1 0.8980 | log-loss 0.1257 | continuity 0.9333
+
+=== xgboost (Boosting (GBDT)) ===
+  fold 1: macro-F1 0.9112 | top-1 0.8530 | log-loss 0.1123 | 7.1s
+  fold 2: macro-F1 0.9162 | top-1 0.8533 | log-loss 0.0906 | 8.5s
+  fold 3: macro-F1 0.9434 | top-1 0.9069 | log-loss 0.0655 | 8.4s
+  fold 4: macro-F1 0.9043 | top-1 0.8453 | log-loss 0.1268 | 14.3s
+  fold 5: macro-F1 0.8948 | top-1 0.8306 | log-loss 0.1067 | 9.7s
+  -> test top-1 0.8742 | macro-F1 0.9249 | log-loss 0.0854 | continuity 0.9343
+  figures -> C:\Users\Rishaan D\PathSnap\results\figures
+
+=== model comparison ===
+                 model            algorithm_family  cv_macro_f1_mean  test_top1_accuracy  test_macro_f1  test_log_loss  test_route_continuity  train_seconds
+                   mlp              Neural network          0.906809            0.876663       0.920600       0.090905               0.934233      46.396420
+               xgboost             Boosting (GBDT)          0.913962            0.874191       0.924865       0.085363               0.934325      11.104136
+              lightgbm             Boosting (GBDT)          0.891146            0.873560       0.897966       0.125652               0.933272       6.932553
+         random_forest          Ensemble (bagging)          0.909176            0.871141       0.914668       0.103035               0.930526     152.847940
+hist_gradient_boosting                    Boosting          0.912223            0.870720       0.922524       0.089011               0.931679      21.004947
+           extra_trees Ensemble (randomised trees)          0.894147            0.864251       0.896340       0.133662               0.926920      70.607835
+         decision_tree                  Tree-based          0.879258            0.861411       0.884171       0.185543               0.923136      55.823144
+   logistic_regression      Linear / probabilistic          0.872015            0.860832       0.876465       0.180166               0.934478       5.248057
+          knn_distance              Instance-based          0.903125            0.855047       0.911084       0.226294               0.920507       1.126838
+           gaussian_nb               Probabilistic          0.788218            0.834219       0.782635       1.071430               0.908349       2.863759
+
+Best by test top-1: mlp
