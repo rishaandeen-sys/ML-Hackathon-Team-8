@@ -37,6 +37,7 @@ from pathsnap.dataset import LABEL_RESIDUAL_MAX_M
 RESULTS = ROOT / "results"
 FIGS = RESULTS / "figures"
 OUT = ROOT / "docs" / "PathSnap_Project_Report.pdf"
+REPO_URL = "https://github.com/rishaandeen-sys/ML-Hackathon-Team-8"
 
 INK = colors.HexColor("#15181C")
 MUTED = colors.HexColor("#6B7280")
@@ -242,6 +243,9 @@ def main() -> None:
     F.append(P(f"Team 8  |  {date.today().strftime('%d %B %Y')}", "meta"))
     F.append(P("UE24CS352A Machine Learning  |  PES University, "
                "Dept. of CSE (RR Campus)", "meta"))
+    F.append(Spacer(1, 7))
+    F.append(P(f'Repository &nbsp;<font color="#1F6FEB"><b>{REPO_URL}</b></font>',
+               "meta"))
     F.append(Spacer(1, 20 * mm))
     F.append(table([
         ["Headline result", ""],
@@ -705,6 +709,15 @@ def main() -> None:
     # ---------------------------------------------------------- 9 deployment
     F.append(PageBreak())
     F.extend(section("9", "Deployment and evaluation integrity"))
+    F.append(P("Source code", "h2"))
+    F.append(P(f'The complete implementation - data processing, feature '
+               f'engineering, every training script, the Bayesian search, the '
+               f'HMM decoder, the API and the user interface - is public at:'))
+    F.append(P(f'<font color="#1F6FEB"><b>{REPO_URL}</b></font>', "code"))
+    F.append(P("Every table and figure in this report is generated from the "
+               "result CSVs committed in that repository, so each number here "
+               "is traceable to the experiment that produced it.", "small"))
+
     F.append(P("Two-laptop architecture", "h2"))
     F.append(table([
         ["", "Laptop 1 - model and API", "Laptop 2 - evaluator UI"],
