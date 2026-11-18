@@ -38,3 +38,5 @@
   fold 1: macro-F1 0.9035 | top-1 0.8510 | log-loss 0.1303 | 382.1s
   fold 2: macro-F1 0.9110 | top-1 0.8530 | log-loss 0.1064 | 246.7s
   fold 3: macro-F1 0.9367 | top-1 0.9056 | log-loss 0.0778 | 170.9s
+  fold 4: macro-F1 0.9000 | top-1 0.8480 | log-loss 0.1448 | 289.2s
+  fold 5: macro-F1 0.8947 | top-1 0.8267 | log-loss 0.1209 | 231.9s
