@@ -1,0 +1,13 @@
+# Normalise text in the repository, check out native line endings by default.
+* text=auto
+
+# These must keep LF or they break when run.
+*.sh        text eol=lf
+*.ps1       text eol=crlf
+
+# Treat notebooks and data as-is.
+*.ipynb     text eol=lf
+*.parquet   binary
+*.joblib    binary
+*.png       binary
+*.pdf       binary
