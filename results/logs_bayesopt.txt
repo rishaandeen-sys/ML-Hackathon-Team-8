@@ -10,3 +10,4 @@
   trial   8: top-1 0.8540  macro-F1 0.9129  (67s)
   trial   9: top-1 0.8541  macro-F1 0.9114  (83s)
   trial  10: top-1 0.8499  macro-F1 0.9059  (19s)
+  trial  11: top-1 0.8541  macro-F1 0.9126  (70s)

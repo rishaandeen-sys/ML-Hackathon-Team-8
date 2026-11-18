@@ -24,3 +24,6 @@ optuna_study.db
 # The deployed bundle written by scripts/07 IS committed:
 #   artifacts/pathsnap_model.joblib, inference_config.json, manifest.json
 artifacts/models/
+
+# Team-internal briefing - generated locally, not published
+docs/PathSnap_EDA_and_Feature_Engineering.pdf
