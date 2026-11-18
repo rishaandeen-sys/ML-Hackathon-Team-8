@@ -15,7 +15,6 @@ from __future__ import annotations
 import hashlib
 import json
 import platform
-import shutil
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -51,8 +50,20 @@ def main() -> None:
 
     src = ARTIFACTS / "models" / hmm_json["model_artifact"]
     dst = ARTIFACTS / "pathsnap_model.joblib"
-    shutil.copy2(src, dst)
-    print(f"model  : {src.name} -> {dst.name} ({dst.stat().st_size / 1e6:.1f} MB)")
+
+    # Re-dump with compression rather than copying: an uncompressed forest can
+    # exceed GitHub's 100 MB per-file limit, and the deployed bundle is meant
+    # to be committed.  joblib reloads a compressed file transparently.
+    import joblib
+    model = joblib.load(src)
+    joblib.dump(model, dst, compress=("zlib", 3))
+    size_mb = dst.stat().st_size / 1e6
+    print(f"model  : {src.name} ({src.stat().st_size / 1e6:.1f} MB) -> "
+          f"{dst.name} ({size_mb:.1f} MB, zlib-3)")
+    if size_mb > 90:
+        print(f"  WARNING: {size_mb:.0f} MB exceeds GitHub's comfortable file size. "
+              f"Consider a lighter final model, or distribute this artifact "
+              f"outside git and document where to fetch it.")
 
     config = {
         "model_artifact": dst.name,

@@ -65,7 +65,9 @@ PathSnap/
 ├── ui/app.py                  Streamlit evaluator interface (Laptop 2)
 ├── artifacts/                 trained model, inference config, manifest
 ├── results/                   every CSV, figure, map and log reported on
-├── docs/provided/             the organisers' supporting documents
+├── docs/
+│   ├── DEMO_CHECKLIST.md      evaluation-day runbook for the two laptops
+│   └── provided/              the organisers' supporting documents
 ├── requirements.txt
 └── README.md
 ```
@@ -118,6 +120,15 @@ python scripts/04_bayesian_optimisation.py  #  ~1 h    (30 TPE trials)
 python scripts/05_hmm_viterbi.py            #  ~20 min
 python scripts/06_generate_maps.py          #  ~3 min
 python scripts/07_export_artifacts.py       #  seconds
+```
+
+Or run everything in one go:
+
+```powershell
+.\scripts\run_all.ps1           # Windows
+```
+```bash
+./scripts/run_all.sh            # macOS / Linux
 ```
 
 Useful flags: `03_train_models.py --quick` (smaller forests, for a fast sanity

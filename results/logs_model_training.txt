@@ -40,3 +40,7 @@
   fold 3: macro-F1 0.9367 | top-1 0.9056 | log-loss 0.0778 | 170.9s
   fold 4: macro-F1 0.9000 | top-1 0.8480 | log-loss 0.1448 | 289.2s
   fold 5: macro-F1 0.8947 | top-1 0.8267 | log-loss 0.1209 | 231.9s
+  -> test top-1 0.8711 | macro-F1 0.9147 | log-loss 0.1030 | continuity 0.9305
+
+=== extra_trees (Ensemble (randomised trees)) ===
+  fold 1: macro-F1 0.8903 | top-1 0.8511 | log-loss 0.1559 | 128.7s
