@@ -116,11 +116,6 @@ def data_quality(trips: pd.DataFrame) -> pd.DataFrame:
         for tid in list_trips(pdir):
             trip = load_trip(pdir, tid)
             lon, lat, ts = trip.track[:, 0], trip.track[:, 1], trip.track[:, 2]
-            sizes = {}
-            for ext in ("track", "nodes", "arcs", "route"):
-                f = pdir / tid / f"{tid}.{ext}"
-                sizes[f"{ext}_bytes"] = f.stat().st_size if f.exists() else 0
-                sizes[f"has_{ext}"] = int(f.exists())
             total_obs += len(ts)
             n_nan += int(np.isnan(trip.track).sum())
             n_dup_ts += int(len(ts) - len(np.unique(ts)))
@@ -290,6 +285,10 @@ def main() -> None:
     dq = data_quality(trips)
     dq.to_csv(RESULTS / "eda_data_quality.csv", index=False)
 
+    anom = anomalies(trips)
+    anom.to_csv(RESULTS / "eda_anomalies.csv", index=False)
+    print(f"  {len(anom)} trips flagged -> results/eda_anomalies.csv")
+
     print("\nPlotting...")
     make_plots(trips, nets)
 
@@ -306,6 +305,8 @@ def main() -> None:
     print(agg.to_string(index=False))
     print("\n=== data quality ===")
     print(dq.T.to_string())
+    print("\n=== flagged trips ===")
+    print(anom.round(3).to_string(index=False))
 
 
 if __name__ == "__main__":

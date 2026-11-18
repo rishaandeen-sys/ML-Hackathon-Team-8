@@ -59,3 +59,4 @@
   -> test top-1 0.8707 | macro-F1 0.9225 | log-loss 0.0890 | continuity 0.9317
 
 === mlp (Neural network) ===
+  fold 1: macro-F1 0.9071 | top-1 0.8485 | log-loss 0.1205 | 230.4s
