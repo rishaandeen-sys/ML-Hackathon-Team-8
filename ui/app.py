@@ -158,9 +158,6 @@ with st.sidebar:
 status_chip = (
     f'<span class="ps-status ps-ok">API online</span>' if health
     else f'<span class="ps-status ps-err">API offline</span>')
-model_chip = (
-    f'<span class="ps-status ps-wait" style="margin-left:8px">'
-    f'{health.get("model", "—")}</span>' if health else "")
 
 st.html(
     f'<div class="ps-hero">'
@@ -169,7 +166,7 @@ st.html(
     f'<div class="tag">Reconstructs the road-network route a vehicle actually '
     f'travelled from a noisy GPS trace, by ranking candidate road segments and '
     f'decoding the most likely connected sequence.</div>'
-    f'<div style="margin-top:15px">{status_chip}{model_chip}</div>'
+    f'<div style="margin-top:15px">{status_chip}</div>'
     f'</div>')
 
 if not health:
@@ -317,9 +314,13 @@ with tab_map:
                sum(p[1] for p in anchor) / len(anchor)] if anchor else [49.87, 8.65])
 
     prov = xyz.flatten()[BASEMAPS[basemap_name]]
-    m = folium.Map(location=centre, zoom_start=14, control_scale=True,
-                   tiles=prov.build_url(), attr=prov.attribution,
-                   zoom_control=True, prefer_canvas=True)
+    # tiles=None plus an explicit named TileLayer. Passing the URL straight to
+    # folium.Map makes the layer control label the basemap with its raw tile
+    # URL, and control=False keeps the basemap out of the control entirely.
+    m = folium.Map(location=centre, zoom_start=14, control_scale=False,
+                   tiles=None, zoom_control=True, prefer_canvas=True)
+    folium.TileLayer(prov.build_url(), attr="Esri", name=basemap_name,
+                     control=False).add_to(m)
 
     if show_network and st.session_state.network:
         g = folium.FeatureGroup(name="Road network", show=True)
@@ -380,7 +381,53 @@ with tab_map:
         m.fit_bounds([[min(lats), min(lons)], [max(lats), max(lons)]],
                      padding=(28, 28))
 
-    folium.LayerControl(collapsed=False, position="topright").add_to(m)
+    folium.LayerControl(collapsed=True, position="topright").add_to(m)
+
+    # The map renders in an iframe, so the page stylesheet cannot reach it.
+    # Leaflet's default chrome is a white box with a long attribution string,
+    # which reads as unfinished against the dark theme.
+    m.get_root().html.add_child(folium.Element("""
+<style>
+  .leaflet-control-attribution {
+    background: rgba(10,14,26,.62) !important;
+    color: rgba(190,200,220,.40) !important;
+    font: 9px system-ui, sans-serif !important;
+    padding: 1px 6px !important;
+    border-radius: 4px 0 0 0 !important;
+    box-shadow: none !important;
+  }
+  .leaflet-control-attribution a {
+    color: rgba(190,200,220,.55) !important; text-decoration: none !important;
+  }
+  .leaflet-control-attribution svg { display: none !important; }
+  .leaflet-bar, .leaflet-control-layers {
+    background: rgba(18,24,41,.90) !important;
+    border: 1px solid rgba(148,170,220,.20) !important;
+    border-radius: 7px !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,.35) !important;
+    backdrop-filter: blur(8px);
+  }
+  .leaflet-bar a {
+    background: transparent !important;
+    color: #C8D2E4 !important;
+    border-bottom: 1px solid rgba(148,170,220,.14) !important;
+    width: 26px !important; height: 26px !important; line-height: 26px !important;
+    font-size: 15px !important;
+  }
+  .leaflet-bar a:last-child { border-bottom: 0 !important; }
+  .leaflet-bar a:hover { background: rgba(110,231,249,.14) !important; color: #fff !important; }
+  .leaflet-control-layers-toggle {
+    background-color: rgba(18,24,41,.90) !important;
+    width: 28px !important; height: 28px !important;
+  }
+  .leaflet-control-layers-expanded {
+    padding: 8px 10px !important; color: #C8D2E4 !important;
+    font: 11.5px system-ui, sans-serif !important; min-width: 0 !important;
+  }
+  .leaflet-control-layers-expanded label { margin: 3px 0 !important; font-weight: 400; }
+  .leaflet-control-layers-separator { border-top: 1px solid rgba(148,170,220,.16) !important; }
+</style>"""))
+
     st_folium(m, use_container_width=True, height=660, returned_objects=[])
 
 # -------------------------------------------------------- model performance

@@ -54,7 +54,12 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"],
                    allow_headers=["*"])
 
 STATE: dict = {"matcher": None, "model_name": None, "config": None,
-               "network_cache": {}, "request_log": []}
+               "network_cache": {}, "request_log": [], "matcher_cache": {}}
+
+#: Loading every artifact at startup would cost well over a gigabyte -
+#: extra_trees alone is 422 MB - so alternates are loaded on first use and
+#: the cache is capped. The deployed model is never evicted.
+MAX_CACHED_MATCHERS = 3
 
 
 # --------------------------------------------------------------------- schemas
@@ -64,6 +69,9 @@ class PredictRequest(BaseModel):
     include_reference: bool = Field(
         False, description="Return the reference route geometry (evaluator view only)")
     run_hmm: bool = Field(True, description="Apply Viterbi decoding")
+    model: str | None = Field(
+        None, description="Classifier to use, as named by /models. "
+                          "Defaults to the deployed model.")
 
 
 class TripInfo(BaseModel):
@@ -129,6 +137,94 @@ def health() -> dict:
             "requests_served": len(STATE["request_log"])}
 
 
+def _available_models() -> list[dict]:
+    """Model artifacts on disk, joined to their recorded experiment metrics.
+
+    Metrics come from results/model_comparison.csv, so this endpoint reports
+    what the experiments measured rather than anything computed here.
+    """
+    import csv
+
+    metrics: dict[str, dict] = {}
+    comp = ROOT / "results" / "model_comparison.csv"
+    if comp.exists():
+        with open(comp, newline="", encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                metrics[row["model"]] = row
+
+    tuned = ROOT / "results" / "bayesopt_summary.csv"
+    tuned_rows: dict[str, dict] = {}
+    if tuned.exists():
+        with open(tuned, newline="", encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                if row.get("variant") == "tuned":
+                    tuned_rows[f"tuned_{row['model']}"] = row
+
+    deployed = STATE["model_name"]
+    out = []
+    for path in sorted((ROOT / "artifacts" / "models").glob("*.joblib")):
+        name = path.stem
+        m = metrics.get(name) or tuned_rows.get(name) or {}
+
+        def num(key):
+            v = m.get(key)
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                return None
+
+        out.append({
+            "name": name,
+            "is_deployed": path.name == deployed,
+            "size_mb": round(path.stat().st_size / 1e6, 1),
+            "algorithm_family": m.get("algorithm_family"),
+            "configuration": m.get("key_configuration"),
+            "cv_macro_f1": num("cv_macro_f1_mean") or num("cv_macro_f1"),
+            "test_top1_accuracy": num("test_top1_accuracy"),
+            "test_macro_f1": num("test_macro_f1"),
+            "test_precision_macro": num("test_precision_macro"),
+            "test_recall_macro": num("test_recall_macro"),
+            "test_log_loss": num("test_log_loss"),
+            "test_route_continuity": num("test_route_continuity"),
+            "train_seconds": num("train_seconds"),
+            "inference_us_per_row": num("inference_us_per_row"),
+        })
+    return out
+
+
+@app.get("/models")
+def models() -> dict:
+    """Classifiers available for reconstruction, with their measured metrics."""
+    return {"deployed": STATE["model_name"], "models": _available_models()}
+
+
+def _matcher_for(model_name: str | None):
+    """Return a matcher for the requested classifier, loading it on demand."""
+    if not model_name:
+        return STATE["matcher"], STATE["model_name"]
+
+    artifact = f"{model_name}.joblib"
+    if artifact == STATE["model_name"]:
+        return STATE["matcher"], STATE["model_name"]
+
+    cache = STATE["matcher_cache"]
+    if model_name in cache:
+        return cache[model_name], artifact
+
+    path = ROOT / "artifacts" / "models" / artifact
+    if not path.exists():
+        available = [m["name"] for m in _available_models()]
+        raise HTTPException(404, f"unknown model '{model_name}'; "
+                                 f"available: {available}")
+
+    print(f"[PathSnap API] loading alternate classifier: {artifact}", flush=True)
+    matcher = PathSnapMatcher(joblib.load(path), STATE["matcher"].hmm_config)
+    if len(cache) >= MAX_CACHED_MATCHERS:
+        cache.pop(next(iter(cache)))
+    cache[model_name] = matcher
+    return matcher, artifact
+
+
 @app.get("/trips", response_model=list[TripInfo])
 def trips() -> list[TripInfo]:
     """The evaluation trips the UI offers."""
@@ -150,15 +246,17 @@ def predict(req: PredictRequest) -> dict:
     t_start = time.perf_counter()
     trip, network = _get_trip(req.trip_id)
 
+    matcher, artifact = _matcher_for(req.model)
+
     # --- prediction: the reference route is not read anywhere in this block
-    result = STATE["matcher"].match(trip, network, run_hmm=req.run_hmm)
+    result = matcher.match(trip, network, run_hmm=req.run_hmm)
 
     # --- server-side scoring, after the fact
     metrics = evaluate_against_reference(result, trip, network)
 
     payload: dict = {
         "trip_id": req.trip_id,
-        "model": STATE["model_name"],
+        "model": artifact,
         "decoder": STATE["config"],
         "n_observations": int(result.n_observations),
         "predicted_route": {
@@ -202,6 +300,7 @@ def predict(req: PredictRequest) -> dict:
     payload["total_seconds"] = round(time.perf_counter() - t_start, 4)
 
     STATE["request_log"].append({"trip_id": req.trip_id,
+                                 "model": artifact,
                                  "at": payload["served_at"],
                                  "seconds": payload["total_seconds"]})
     ev = payload["evaluation"]
