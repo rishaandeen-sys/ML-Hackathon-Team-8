@@ -1,0 +1,31 @@
+{
+  "model": "xgboost",
+  "model_artifact": "tuned_xgboost.joblib",
+  "config": {
+    "beta": 3.0,
+    "emission_weight": 1.0,
+    "transition_weight": 1.0,
+    "unreachable_penalty": 40.0,
+    "same_arc_bonus": 0.5,
+    "max_search_factor": 4.0,
+    "max_search_margin_m": 300.0,
+    "gap_time_s": 5.0,
+    "gap_beta_multiplier": 4.0,
+    "min_emission_prob": 1e-09,
+    "uturn_penalty": 8.0,
+    "turn_penalty_weight": 2.0,
+    "turn_free_angle": 0.79,
+    "direction_consistency_weight": 0.0
+  },
+  "tuning_trips": [
+    "00000026",
+    "00000079",
+    "00000041",
+    "00000016",
+    "00000035",
+    "00000032",
+    "00000062",
+    "00000084"
+  ],
+  "note": "decoder parameters selected on training trips only"
+}

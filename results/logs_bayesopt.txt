@@ -11,3 +11,43 @@
   trial   9: top-1 0.8541  macro-F1 0.9114  (83s)
   trial  10: top-1 0.8499  macro-F1 0.9059  (19s)
   trial  11: top-1 0.8541  macro-F1 0.9126  (70s)
+  trial  12: top-1 0.8542  macro-F1 0.9130  (59s)
+  trial  13: top-1 0.8540  macro-F1 0.9127  (61s)
+  trial  14: top-1 0.8543  macro-F1 0.9134  (58s)
+  trial  15: top-1 0.8546  macro-F1 0.9123  (58s)
+  trial  16: top-1 0.8541  macro-F1 0.9117  (85s)
+  trial  17: top-1 0.8550  macro-F1 0.9131  (114s)
+  trial  18: top-1 0.8549  macro-F1 0.9134  (79s)
+  trial  19: top-1 0.8547  macro-F1 0.9130  (86s)
+  trial  20: top-1 0.8531  macro-F1 0.9106  (123s)
+  trial  21: top-1 0.8547  macro-F1 0.9133  (134s)
+  trial  22: top-1 0.8534  macro-F1 0.9113  (115s)
+  trial  23: top-1 0.8545  macro-F1 0.9135  (43s)
+  trial  24: top-1 0.8547  macro-F1 0.9129  (42s)
+  trial  25: top-1 0.8543  macro-F1 0.9127  (87s)
+  trial  26: top-1 0.8544  macro-F1 0.9130  (43s)
+  trial  27: top-1 0.8538  macro-F1 0.9117  (63s)
+  trial  28: top-1 0.8529  macro-F1 0.9110  (82s)
+  trial  29: top-1 0.8546  macro-F1 0.9129  (55s)
+
+Best CV top-1: 0.8550
+Best params: {
+  "n_estimators": 550,
+  "learning_rate": 0.014989297105512724,
+  "max_depth": 10,
+  "min_child_weight": 0.5305773469919701,
+  "subsample": 0.645604574674146,
+  "colsample_bytree": 0.5194118222179359,
+  "gamma": 0.05627857274345114,
+  "reg_alpha": 0.005594858036871808,
+  "reg_lambda": 0.0001900221745427125
+}
+
+Final 5-fold comparison (untuned)...
+Final 5-fold comparison (tuned)...
+  figures -> C:\Users\Rishaan D\PathSnap\results\figures
+
+=== tuned vs untuned ===
+variant   model  cv_top1_accuracy  cv_top1_std  cv_macro_f1  cv_macro_f1_std  cv_log_loss  test_top1_accuracy  test_macro_f1  test_log_loss  test_route_continuity  train_seconds  inference_us_per_row
+untuned xgboost          0.857823     0.025905     0.913962         0.016378     0.100363            0.874191       0.924865       0.085363               0.934325      11.104136              0.691767
+  tuned xgboost          0.859105     0.025832     0.915170         0.016093     0.098733            0.875559       0.926167       0.084281               0.936505      70.106078              1.886051

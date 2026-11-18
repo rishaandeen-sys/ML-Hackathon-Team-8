@@ -49,10 +49,26 @@ ARTIFACTS = ROOT / "artifacts"
 RAW = ROOT / "data" / "raw"
 SEED = 42
 
-#: training trips used to pick decoder parameters, chosen for variety of
-#: length and network density rather than for score
-TUNING_TRIPS = ["00000001", "00000005", "00000012", "00000023", "00000037",
-                "00000048", "00000060", "00000075"]
+#: Training trips used to pick decoder parameters.  Selected programmatically
+#: for a spread of trip length rather than hand-picked, and the trips whose
+#: reference route covers only part of the track are excluded -- tuning a
+#: decoder against unreliable labels would bake their errors into beta.
+EXCLUDE_FROM_TUNING = {"00000033", "00000054", "00000002"}
+N_TUNING_TRIPS = 8
+
+
+def pick_tuning_trips(n: int = N_TUNING_TRIPS) -> list[str]:
+    """A length-stratified sample of training trips, excluding known-bad ones."""
+    inv_path = RESULTS / "eda_trip_inventory.csv"
+    available = [t for t in list_trips(RAW / "train") if t not in EXCLUDE_FROM_TUNING]
+    if not inv_path.exists():
+        return available[:n]
+    inv = pd.read_csv(inv_path, dtype={"trip_id": str})
+    inv = inv[(inv.partition == "train") & (inv.trip_id.isin(available))]
+    inv = inv.sort_values("n_observations").reset_index(drop=True)
+    # evenly spaced quantiles of trip length, so short and long trips both appear
+    idx = np.linspace(0, len(inv) - 1, num=min(n, len(inv))).round().astype(int)
+    return inv.loc[np.unique(idx), "trip_id"].tolist()
 
 plt.rcParams.update({"figure.dpi": 130, "savefig.bbox": "tight",
                      "axes.grid": True, "grid.alpha": 0.3, "font.size": 9})
@@ -97,16 +113,16 @@ def score_trips(matcher, partition: str, trip_ids: list[str], run_hmm=True,
     return pd.DataFrame(rows)
 
 
-def tune_decoder(model) -> tuple[HMMConfig, pd.DataFrame]:
+def tune_decoder(model, tuning_trips: list[str]) -> tuple[HMMConfig, pd.DataFrame]:
     """Grid search over the decoder parameters on training trips only."""
     betas = [4.0, 8.0, 12.0, 20.0, 35.0]
     penalties = [6.0, 12.0, 25.0]
     rows = []
-    print(f"Decoder search on {len(TUNING_TRIPS)} training trips "
+    print(f"Decoder search on {len(tuning_trips)} training trips "
           f"({len(betas) * len(penalties)} configurations)")
 
     cache = {}
-    for tid in TUNING_TRIPS:
+    for tid in tuning_trips:
         trip = load_trip(RAW / "train", tid)
         cache[tid] = (trip, build_network(trip))
 
@@ -143,12 +159,14 @@ def main() -> None:
     FIGS.mkdir(parents=True, exist_ok=True)
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     model, model_name, artifact_name = load_best_model(args.model)
+    tuning_trips = pick_tuning_trips()
+    print(f"Decoder tuning trips: {', '.join(tuning_trips)}")
 
     if args.skip_tuning and (RESULTS / "hmm_config.json").exists():
         cfg = HMMConfig(**json.loads((RESULTS / "hmm_config.json").read_text())["config"])
         grid = pd.read_csv(RESULTS / "hmm_parameter_search.csv")
     else:
-        cfg, grid = tune_decoder(model)
+        cfg, grid = tune_decoder(model, tuning_trips)
         grid.to_csv(RESULTS / "hmm_parameter_search.csv", index=False)
 
     print(f"\nSelected decoder config: beta={cfg.beta}, "
@@ -156,7 +174,7 @@ def main() -> None:
     with open(RESULTS / "hmm_config.json", "w") as f:
         json.dump({"model": model_name, "model_artifact": artifact_name,
                    "config": cfg.to_dict(),
-                   "tuning_trips": TUNING_TRIPS,
+                   "tuning_trips": tuning_trips,
                    "note": "decoder parameters selected on training trips only"},
                   f, indent=2)
 

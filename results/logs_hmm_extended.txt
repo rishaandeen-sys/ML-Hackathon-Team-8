@@ -1,0 +1,54 @@
+﻿Model          : tuned_xgboost.joblib
+Baseline config: beta=4.0, penalty=25.0
+Tuning trips   : 00000026, 00000079, 00000041, 00000016, 00000035, 00000032, 00000062, 00000084
+
+Loading tuning trips...
+
+Baseline (stage 5): top-1 0.9523, continuity 0.9693
+
+Phase 1: beta x penalty (24 configs)
+  beta=  1.0 penalty= 25.0 -> top-1 0.9342, continuity 0.9664
+  beta=  1.0 penalty= 40.0 -> top-1 0.9364, continuity 0.9666
+  beta=  1.0 penalty= 60.0 -> top-1 0.9374, continuity 0.9667
+  beta=  1.0 penalty= 80.0 -> top-1 0.9407, continuity 0.9670
+  beta=  1.5 penalty= 25.0 -> top-1 0.9411, continuity 0.9675
+  beta=  1.5 penalty= 40.0 -> top-1 0.9433, continuity 0.9678
+  beta=  1.5 penalty= 60.0 -> top-1 0.9460, continuity 0.9679
+  beta=  1.5 penalty= 80.0 -> top-1 0.9460, continuity 0.9679
+  beta=  2.0 penalty= 25.0 -> top-1 0.9430, continuity 0.9684
+  beta=  2.0 penalty= 40.0 -> top-1 0.9479, continuity 0.9686
+  beta=  2.0 penalty= 60.0 -> top-1 0.9479, continuity 0.9686
+  beta=  2.0 penalty= 80.0 -> top-1 0.9479, continuity 0.9686
+  beta=  3.0 penalty= 25.0 -> top-1 0.9524, continuity 0.9686
+  beta=  3.0 penalty= 40.0 -> top-1 0.9526, continuity 0.9686
+  beta=  3.0 penalty= 60.0 -> top-1 0.9526, continuity 0.9686
+  beta=  3.0 penalty= 80.0 -> top-1 0.9522, continuity 0.9686
+  beta=  4.0 penalty= 25.0 -> top-1 0.9523, continuity 0.9693
+  beta=  4.0 penalty= 40.0 -> top-1 0.9521, continuity 0.9693
+  beta=  4.0 penalty= 60.0 -> top-1 0.9520, continuity 0.9693
+  beta=  4.0 penalty= 80.0 -> top-1 0.9521, continuity 0.9693
+  beta=  6.0 penalty= 25.0 -> top-1 0.9519, continuity 0.9695
+  beta=  6.0 penalty= 40.0 -> top-1 0.9521, continuity 0.9695
+  beta=  6.0 penalty= 60.0 -> top-1 0.9521, continuity 0.9695
+  beta=  6.0 penalty= 80.0 -> top-1 0.9522, continuity 0.9695
+
+Best after phase 1: beta=3.0, penalty=40.0 -> top-1 0.9526
+
+Phase 2: same_arc_bonus and max_search_factor
+  same_arc_bonus=0.00 -> top-1 0.9526, continuity 0.9686
+  same_arc_bonus=0.25 -> top-1 0.9529, continuity 0.9688
+  same_arc_bonus=0.50 -> top-1 0.9530, continuity 0.9687
+  same_arc_bonus=1.00 -> top-1 0.9524, continuity 0.9684
+  same_arc_bonus=2.00 -> top-1 0.9507, continuity 0.9684
+  max_search_factor= 3.0 -> top-1 0.9530, continuity 0.9687
+  max_search_factor= 4.0 -> top-1 0.9530, continuity 0.9687
+  max_search_factor= 6.0 -> top-1 0.9530, continuity 0.9687
+  max_search_factor= 8.0 -> top-1 0.9529, continuity 0.9687
+
+==============================================================
+Best config : beta=3.0, penalty=40.0, same_arc_bonus=0.5, max_search_factor=4.0
+Top-1       : 0.9523 -> 0.9530  (+0.08 pp on tuning trips)
+Continuity  : 0.9693 -> 0.9687
+
+hmm_config.json updated -> re-run scripts/05_hmm_viterbi.py --skip-tuning for test-set numbers
+  figure -> C:\Users\Rishaan D\PathSnap\results\figures\hmm_extended_search.png

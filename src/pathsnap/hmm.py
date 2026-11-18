@@ -53,8 +53,24 @@ class HMMConfig:
     gap_beta_multiplier: float = 4.0
     min_emission_prob: float = 1e-9
 
+    # --- directional consistency -------------------------------------------
+    # Distance alone cannot tell the two directions of a two-way street apart:
+    # the reverse arc has identical geometry, so an identical d_route. Without
+    # these terms the decoder is free to flip direction between consecutive
+    # fixes at no cost, which is a classic map-matching failure.
+    uturn_penalty: float = 0.0          # -log penalty for taking the reverse arc
+    turn_penalty_weight: float = 0.0    # -log penalty per radian of bearing change
+    turn_free_angle: float = 0.79       # bearing change tolerated free (~45 deg)
+    direction_consistency_weight: float = 0.0  # reward agreeing with GPS heading
+
     def to_dict(self):
         return asdict(self)
+
+
+def _angle_gap(a: float, b: float) -> float:
+    """Smallest absolute difference between two bearings, in [0, pi]."""
+    d = abs(float(a) - float(b)) % (2 * np.pi)
+    return d if d <= np.pi else 2 * np.pi - d
 
 
 def _normalise_emissions(scores: np.ndarray, floor: float) -> np.ndarray:
@@ -134,6 +150,21 @@ def viterbi_decode(candidates, scores, obs_xy, timestamps, network,
         for h in {int(n) for n in head_nodes}:
             sp_cache[h] = network.shortest_path_lengths(h, target_set, limit)
 
+        # directional terms, computed once per step
+        use_direction = (cfg.uturn_penalty > 0 or cfg.turn_penalty_weight > 0
+                         or cfg.direction_consistency_weight > 0)
+        if use_direction:
+            prev_tail = network.arcs[prev_arcs, 0]
+            prev_head = network.arcs[prev_arcs, 1]
+            cur_tail = network.arcs[cur_arcs, 0]
+            cur_head = network.arcs[cur_arcs, 1]
+            prev_bear = network.arc_bearing[prev_arcs]
+            cur_bear = network.arc_bearing[cur_arcs]
+            # heading implied by the GPS movement over this step
+            step_vec = obs_xy[t_cur] - obs_xy[t_prev]
+            gps_bear = float(np.arctan2(step_vec[0], step_vec[1]))
+            gps_bear_valid = d_gps > 2.0
+
         trans = np.empty((len(prev_arcs), len(cur_arcs)), dtype=np.float64)
         for i in range(len(prev_arcs)):
             ai = int(prev_arcs[i])
@@ -145,15 +176,32 @@ def viterbi_decode(candidates, scores, obs_xy, timestamps, network,
                 tj = float(t_cur_proj[j])
                 if ai == aj:
                     d_route = abs(tj - ti) * network.arc_length[ai]
-                    trans[i, j] = -abs(d_route - d_gps) / beta + cfg.same_arc_bonus
-                    continue
-                sp = reach.get(int(tail_nodes[j]))
-                if sp is None:
-                    trans[i, j] = -cfg.unreachable_penalty
-                    n_unreachable += 1
+                    val = -abs(d_route - d_gps) / beta + cfg.same_arc_bonus
                 else:
-                    d_route = rem_i + sp + tj * network.arc_length[aj]
-                    trans[i, j] = -abs(d_route - d_gps) / beta
+                    sp = reach.get(int(tail_nodes[j]))
+                    if sp is None:
+                        val = -cfg.unreachable_penalty
+                        n_unreachable += 1
+                    else:
+                        d_route = rem_i + sp + tj * network.arc_length[aj]
+                        val = -abs(d_route - d_gps) / beta
+
+                if use_direction and ai != aj:
+                    # a U-turn: the candidate is the same street travelled the
+                    # other way.  Identical geometry means identical d_route, so
+                    # the distance term cannot distinguish it at all.
+                    if (prev_tail[i] == cur_head[j]
+                            and prev_head[i] == cur_tail[j]):
+                        val -= cfg.uturn_penalty
+                    if cfg.turn_penalty_weight > 0:
+                        turn = _angle_gap(prev_bear[i], cur_bear[j])
+                        excess = max(0.0, turn - cfg.turn_free_angle)
+                        val -= cfg.turn_penalty_weight * excess
+                    if cfg.direction_consistency_weight > 0 and gps_bear_valid:
+                        misfit = _angle_gap(gps_bear, cur_bear[j])
+                        val -= cfg.direction_consistency_weight * misfit
+
+                trans[i, j] = val
 
         total = delta[:, None] + cfg.transition_weight * trans
         best_prev = np.argmax(total, axis=0)

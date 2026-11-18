@@ -1,0 +1,22 @@
+{
+  "model": "xgboost",
+  "best_params": {
+    "n_estimators": 550,
+    "learning_rate": 0.014989297105512724,
+    "max_depth": 10,
+    "min_child_weight": 0.5305773469919701,
+    "subsample": 0.645604574674146,
+    "colsample_bytree": 0.5194118222179359,
+    "gamma": 0.05627857274345114,
+    "reg_alpha": 0.005594858036871808,
+    "reg_lambda": 0.0001900221745427125
+  },
+  "best_cv_top1": 0.8549956451941342,
+  "n_trials": 30,
+  "search_folds": 3,
+  "final_folds": 5,
+  "sampler": "TPE (Optuna)",
+  "objective": "group-CV observation-level top-1 accuracy",
+  "search_seconds": 2108.0294122695923,
+  "seed": 42
+}

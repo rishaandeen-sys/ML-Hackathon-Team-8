@@ -1,0 +1,34 @@
+﻿Model     : tuned_xgboost.joblib
+Base cfg  : beta=3.0, penalty=40.0, same_arc_bonus=0.5
+Trips     : 00000026, 00000079, 00000041, 00000016, 00000035, 00000032, 00000062, 00000084
+
+Baseline: top-1 0.9530, continuity 0.9687
+
+Phase 1: U-turn penalty
+  uturn_penalty=  0.0 -> top-1 0.9530, continuity 0.9687
+  uturn_penalty=  1.0 -> top-1 0.9538, continuity 0.9690
+  uturn_penalty=  2.0 -> top-1 0.9534, continuity 0.9691
+  uturn_penalty=  4.0 -> top-1 0.9548, continuity 0.9692
+  uturn_penalty=  8.0 -> top-1 0.9559, continuity 0.9693
+  uturn_penalty= 15.0 -> top-1 0.9559, continuity 0.9691
+
+Phase 2: turn penalty (with uturn_penalty=8.0)
+  turn_penalty_weight= 0.0 -> top-1 0.9559, continuity 0.9693
+  turn_penalty_weight= 0.5 -> top-1 0.9559, continuity 0.9693
+  turn_penalty_weight= 1.0 -> top-1 0.9559, continuity 0.9694
+  turn_penalty_weight= 2.0 -> top-1 0.9562, continuity 0.9699
+  turn_penalty_weight= 4.0 -> top-1 0.9559, continuity 0.9702
+
+Phase 3: GPS direction consistency (uturn=8.0, turn=2.0)
+  direction_weight= 0.0 -> top-1 0.9562, continuity 0.9699
+  direction_weight= 0.5 -> top-1 0.9556, continuity 0.9697
+  direction_weight= 1.0 -> top-1 0.9560, continuity 0.9696
+  direction_weight= 2.0 -> top-1 0.9533, continuity 0.9690
+  direction_weight= 4.0 -> top-1 0.9450, continuity 0.9676
+
+================================================================
+Best : uturn=8.0, turn=2.0, direction=0.0
+Top-1      : 0.9530 -> 0.9562  (+0.32 pp on tuning trips)
+Continuity : 0.9687 -> 0.9699
+
+hmm_config.json updated with the directional terms.

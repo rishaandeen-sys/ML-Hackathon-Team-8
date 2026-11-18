@@ -1,0 +1,80 @@
+{
+  "created_at": "2026-11-18T07:24:11.186653+00:00",
+  "python": "3.12.10",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "headline_metrics": {
+    "best_untuned_model": "mlp",
+    "models_compared": 10,
+    "tuned_cv_top1": 0.8591045855063266,
+    "untuned_cv_top1": 0.8578231037847759,
+    "tuned_test_top1": 0.8755588281701994,
+    "classifier_only_test_top1": 0.8758043704367812,
+    "classifier_plus_hmm_test_top1": 0.9527894380971587,
+    "classifier_only_continuity": 0.9361899339899418,
+    "classifier_plus_hmm_continuity": 0.9783577540177116
+  },
+  "config": {
+    "model_artifact": "pathsnap_model.joblib",
+    "source_artifact": "tuned_xgboost.joblib",
+    "model_name": "xgboost",
+    "feature_names": [
+      "dist_m",
+      "dist_rank",
+      "dist_minus_best",
+      "dist_ratio_best",
+      "dist_z_in_obs",
+      "n_candidates",
+      "arc_length",
+      "proj_t",
+      "proj_is_endpoint",
+      "heading_diff",
+      "heading_cos",
+      "heading_valid",
+      "speed_mps",
+      "accel_mps2",
+      "dt_prev",
+      "dt_next",
+      "step_prev_m",
+      "step_next_m",
+      "dist_prev_obs_to_arc",
+      "dist_next_obs_to_arc",
+      "arc_out_degree",
+      "arc_in_degree",
+      "has_reverse_arc",
+      "local_arc_density",
+      "obs_frac",
+      "turn_angle"
+    ],
+    "candidate_generation": {
+      "radius_m": 60.0,
+      "max_candidates": 10,
+      "arc_sample_spacing_m": 25.0
+    },
+    "label_residual_max_m": 30.0,
+    "hmm": {
+      "beta": 3.0,
+      "emission_weight": 1.0,
+      "transition_weight": 1.0,
+      "unreachable_penalty": 40.0,
+      "same_arc_bonus": 0.5,
+      "max_search_factor": 4.0,
+      "max_search_margin_m": 300.0,
+      "gap_time_s": 5.0,
+      "gap_beta_multiplier": 4.0,
+      "min_emission_prob": 1e-09,
+      "uturn_penalty": 8.0,
+      "turn_penalty_weight": 2.0,
+      "turn_free_angle": 0.79,
+      "direction_consistency_weight": 0.0
+    },
+    "projection": "local equirectangular about the trip centroid, metres"
+  },
+  "checksums": {
+    "pathsnap_model.joblib": "a6f6a40c00d8b953a7642f957a7cfcda1bbf78ef74e2c1b16021f00754f490a9",
+    "inference_config.json": "dc8f0521ce0ebed46e6dd31b116ec720140ab6deeb504097bebd043226606db4"
+  },
+  "files": {
+    "pathsnap_model.joblib": 10454398,
+    "inference_config.json": 1365
+  }
+}

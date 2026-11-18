@@ -37,38 +37,60 @@ from pathsnap.dataset import LABEL_RESIDUAL_MAX_M
 RESULTS = ROOT / "results"
 FIGS = RESULTS / "figures"
 OUT = ROOT / "docs" / "PathSnap_EDA_and_Feature_Engineering.pdf"
-REPO = "https://github.com/rishaandeen-sys/ML-Hackathon-Team-8"
+
+DOC_TITLE = "ML Hackathon"
+DOC_SUBTITLE = "Dataset, EDA &amp; Feature Engineering"
 
 INK = colors.HexColor("#111827")
 MUTED = colors.HexColor("#6B7280")
-ACCENT = colors.HexColor("#1F6FD0")
-RULE = colors.HexColor("#D1D5DB")
-BAND = colors.HexColor("#F3F4F6")
+ACCENT = colors.HexColor("#1D4ED8")
+ACCENT_DARK = colors.HexColor("#1E3A8A")
+ACCENT_SOFT = colors.HexColor("#EFF4FD")
+RULE = colors.HexColor("#E2E5EA")
+BAND = colors.HexColor("#F6F7F9")
+ZEBRA = colors.HexColor("#FAFBFC")
+WHITE = colors.white
 
 ss = getSampleStyleSheet()
 S = {
+    "cover_kicker": ParagraphStyle("ck", parent=ss["Normal"], fontName="Helvetica-Bold",
+                                   fontSize=10.5, leading=13, textColor=ACCENT,
+                                   spaceAfter=10, tracking=0.6),
+    "cover_title": ParagraphStyle("ct", parent=ss["Title"], fontName="Helvetica-Bold",
+                                  fontSize=34, leading=38, textColor=INK, spaceAfter=8),
+    "cover_sub": ParagraphStyle("cs", parent=ss["Normal"], fontSize=15, leading=20,
+                                textColor=ACCENT_DARK, spaceAfter=28,
+                                fontName="Helvetica"),
+    "cover_meta": ParagraphStyle("cm", parent=ss["Normal"], fontSize=10, leading=16,
+                                 textColor=MUTED),
     "title": ParagraphStyle("t", parent=ss["Title"], fontName="Helvetica-Bold",
-                            fontSize=22, leading=26, textColor=INK, spaceAfter=2),
-    "sub": ParagraphStyle("s", parent=ss["Normal"], fontSize=10.5, leading=15,
+                            fontSize=20, leading=24, textColor=INK, spaceAfter=2),
+    "sub": ParagraphStyle("s", parent=ss["Normal"], fontSize=10, leading=14.5,
                           textColor=MUTED, spaceAfter=14),
     "h1": ParagraphStyle("h1", parent=ss["Heading1"], fontName="Helvetica-Bold",
-                         fontSize=14.5, leading=18, textColor=INK,
-                         spaceBefore=16, spaceAfter=7),
+                         fontSize=15, leading=19, textColor=ACCENT_DARK,
+                         spaceBefore=18, spaceAfter=9),
     "h2": ParagraphStyle("h2", parent=ss["Heading2"], fontName="Helvetica-Bold",
                          fontSize=11.5, leading=15, textColor=INK,
-                         spaceBefore=11, spaceAfter=5),
-    "body": ParagraphStyle("b", parent=ss["Normal"], fontSize=9.6, leading=14.2,
+                         spaceBefore=13, spaceAfter=6),
+    "body": ParagraphStyle("b", parent=ss["Normal"], fontSize=9.7, leading=14.6,
                            textColor=INK, alignment=TA_LEFT, spaceAfter=7),
-    "small": ParagraphStyle("sm", parent=ss["Normal"], fontSize=8.3, leading=11.6,
+    "small": ParagraphStyle("sm", parent=ss["Normal"], fontSize=8.4, leading=12,
                             textColor=MUTED, spaceAfter=6),
-    "cap": ParagraphStyle("c", parent=ss["Normal"], fontSize=8.2, leading=11,
-                          textColor=MUTED, spaceBefore=3, spaceAfter=10),
+    "cap": ParagraphStyle("c", parent=ss["Normal"], fontSize=8.3, leading=11.2,
+                          textColor=MUTED, spaceBefore=4, spaceAfter=12,
+                          fontName="Helvetica-Oblique"),
     "code": ParagraphStyle("co", parent=ss["Normal"], fontName="Courier",
-                           fontSize=8.2, leading=11.5, textColor=INK,
-                           backColor=BAND, borderPadding=5, spaceAfter=8),
-    "cell": ParagraphStyle("cl", parent=ss["Normal"], fontSize=8.2, leading=11),
-    "cellb": ParagraphStyle("clb", parent=ss["Normal"], fontSize=8.2, leading=11,
-                            fontName="Helvetica-Bold"),
+                           fontSize=8.3, leading=12, textColor=INK,
+                           backColor=BAND, borderPadding=7, spaceAfter=9),
+    "cell": ParagraphStyle("cl", parent=ss["Normal"], fontSize=8.3, leading=11.6),
+    "cellb": ParagraphStyle("clb", parent=ss["Normal"], fontSize=8.3, leading=11.6,
+                            fontName="Helvetica-Bold", textColor=ACCENT_DARK),
+    "callout_t": ParagraphStyle("clt", parent=ss["Normal"], fontSize=9.3,
+                                leading=12.5, fontName="Helvetica-Bold",
+                                textColor=ACCENT_DARK),
+    "callout_b": ParagraphStyle("clb2", parent=ss["Normal"], fontSize=9,
+                                leading=13, textColor=INK),
 }
 
 
@@ -80,51 +102,120 @@ def bullets(items, style="body"):
     return [Paragraph(f"&bull;&nbsp;&nbsp;{t}", S[style]) for t in items]
 
 
-def table(rows, widths, header=True, align_right=()):
+def table(rows, widths, header=True, align_right=(), zebra=True):
     data = []
     for r_i, row in enumerate(rows):
         out = []
-        for c_i, cell in enumerate(row):
+        for cell in row:
             st = "cellb" if (header and r_i == 0) else "cell"
             out.append(Paragraph(str(cell), S[st]))
         data.append(out)
     t = Table(data, colWidths=widths, repeatRows=1 if header else 0)
     style = [
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("LINEBELOW", (0, 0), (-1, 0), 0.9, INK if header else RULE),
-        ("LINEBELOW", (0, 1), (-1, -2), 0.3, RULE),
-        ("TOPPADDING", (0, 0), (-1, -1), 4),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-        ("LEFTPADDING", (0, 0), (-1, -1), 5),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+        ("LINEBELOW", (0, 0), (-1, 0), 1.1, ACCENT if header else RULE),
+        ("LINEBELOW", (0, 1), (-1, -2), 0.4, RULE),
+        ("LINEBELOW", (0, -1), (-1, -1), 0.4, RULE),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
     ]
     if header:
-        style.append(("BACKGROUND", (0, 0), (-1, 0), BAND))
+        style.append(("BACKGROUND", (0, 0), (-1, 0), ACCENT_SOFT))
+    if zebra:
+        start = 1 if header else 0
+        for i in range(start, len(rows)):
+            if (i - start) % 2 == 1:
+                style.append(("BACKGROUND", (0, i), (-1, i), ZEBRA))
     for c in align_right:
         style.append(("ALIGN", (c, 0), (c, -1), "RIGHT"))
     t.setStyle(TableStyle(style))
     return t
 
 
-def figure(name, caption, width=165 * mm):
+def figure(name, caption, width=164 * mm):
     p = FIGS / name
     if not p.exists():
         return [P(f"<i>missing figure: {name}</i>", "small")]
     from PIL import Image as PILImage
     with PILImage.open(p) as im:
         w, h = im.size
-    return [Image(str(p), width=width, height=width * h / w), P(caption, "cap")]
+    img = Image(str(p), width=width, height=width * h / w)
+    frame = Table([[img]], colWidths=[width + 4])
+    frame.setStyle(TableStyle([
+        ("BOX", (0, 0), (-1, -1), 0.6, RULE),
+        ("TOPPADDING", (0, 0), (-1, -1), 2),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+        ("LEFTPADDING", (0, 0), (-1, -1), 2),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 2),
+    ]))
+    return [frame, P(caption, "cap")]
+
+
+def callout(title, body):
+    """A left-accented highlight box for a key finding or decision."""
+    inner = [Paragraph(title, S["callout_t"]), Spacer(1, 3),
+             Paragraph(body, S["callout_b"])]
+    t = Table([[inner]], colWidths=[169 * mm])
+    t.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), ACCENT_SOFT),
+        ("LINEBEFORE", (0, 0), (0, -1), 2.6, ACCENT),
+        ("TOPPADDING", (0, 0), (-1, -1), 9),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 9),
+        ("LEFTPADDING", (0, 0), (-1, -1), 11),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 11),
+    ]))
+    return [t, Spacer(1, 11)]
+
+
+def section(number, title):
+    """A numbered section heading with a coloured badge."""
+    badge = Table([[Paragraph(number, ParagraphStyle(
+        "badge", fontName="Helvetica-Bold", fontSize=10.5, leading=13,
+        textColor=WHITE, alignment=1))]], colWidths=[9 * mm], rowHeights=[7 * mm])
+    badge.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), ACCENT),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+    ]))
+    heading = Paragraph(title, ParagraphStyle(
+        "sh", parent=ss["Heading1"], fontName="Helvetica-Bold", fontSize=15,
+        leading=19, textColor=ACCENT_DARK))
+    row = Table([[badge, heading]], colWidths=[11 * mm, 158 * mm])
+    row.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, -1), 0),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+        ("LEFTPADDING", (0, 0), (-1, -1), 0),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+    ]))
+    rule = Table([[""]], colWidths=[169 * mm], rowHeights=[0.9])
+    rule.setStyle(TableStyle([("LINEBELOW", (0, 0), (-1, -1), 0.8, RULE)]))
+    return [Spacer(1, 4), row, Spacer(1, 8), rule, Spacer(1, 10)]
 
 
 def page_furniture(canvas, doc):
     canvas.saveState()
-    canvas.setFont("Helvetica", 7.5)
+    if doc.page > 1:
+        canvas.setFillColor(ACCENT)
+        canvas.rect(0, A4[1] - 3, A4[0], 3, stroke=0, fill=1)
+    canvas.setFont("Helvetica", 7.6)
     canvas.setFillColor(MUTED)
-    canvas.drawString(20 * mm, 12 * mm, "PathSnap - Team 8 - EDA & Feature Engineering")
+    canvas.drawString(20 * mm, 12 * mm, DOC_TITLE)
     canvas.drawRightString(A4[0] - 20 * mm, 12 * mm, f"Page {doc.page}")
     canvas.setStrokeColor(RULE)
-    canvas.setLineWidth(0.4)
+    canvas.setLineWidth(0.5)
     canvas.line(20 * mm, 15.5 * mm, A4[0] - 20 * mm, 15.5 * mm)
+    canvas.restoreState()
+
+
+def cover_furniture(canvas, doc):
+    canvas.saveState()
+    canvas.setFillColor(ACCENT)
+    canvas.rect(0, A4[1] - 9, A4[0], 9, stroke=0, fill=1)
+    canvas.setFillColor(ACCENT_DARK)
+    canvas.rect(0, 0, A4[0], 4, stroke=0, fill=1)
     canvas.restoreState()
 
 
@@ -155,18 +246,40 @@ def main() -> None:
         str(OUT), pagesize=A4,
         leftMargin=20 * mm, rightMargin=20 * mm,
         topMargin=18 * mm, bottomMargin=20 * mm,
-        title="PathSnap - EDA and Feature Engineering",
+        title="ML Hackathon - Dataset, EDA and Feature Engineering",
         author="Team 8")
 
     F: list = []
 
-    F.append(P("PathSnap: Dataset, EDA &amp; Feature Engineering"))
-    F.append(P(f"UE24CS352A Machine Learning Hackathon &nbsp;|&nbsp; PES University, "
-               f"Dept. of CSE (RR Campus) &nbsp;|&nbsp; Team 8<br/>"
-               f"Repository: <font color='#1F6FD0'>{REPO}</font>"
-               f" &nbsp;|&nbsp; Generated {date.today().isoformat()}", "sub"))
+    # ------------------------------------------------------------- cover page
+    F.append(Spacer(1, 70 * mm))
+    F.append(P("TECHNICAL BRIEFING", "cover_kicker"))
+    F.append(P(DOC_TITLE, "cover_title"))
+    F.append(P(DOC_SUBTITLE, "cover_sub"))
 
-    F.append(P("1. The dataset", "h1"))
+    meta_rule = Table([[""]], colWidths=[70 * mm], rowHeights=[1.2])
+    meta_rule.setStyle(TableStyle([("LINEABOVE", (0, 0), (-1, -1), 1.4, ACCENT)]))
+    F.append(meta_rule)
+    F.append(Spacer(1, 10))
+    F.append(P(f"Team 8 &nbsp;&bull;&nbsp; {date.today().strftime('%d %B %Y')}",
+               "cover_meta"))
+    F.append(P("UE24CS352A Machine Learning &nbsp;&bull;&nbsp; "
+               "PES University, Dept. of CSE (RR Campus)", "cover_meta"))
+
+    F.append(Spacer(1, 26 * mm))
+    toc = table([
+        ["Section", "Covers"],
+        ["1. The dataset", "File formats, directed arcs, partitions"],
+        ["2. Exploratory data analysis", "Data quality, networks, sampling, anomalies"],
+        ["3. Labelled examples", "Deriving per-observation labels, the trust threshold"],
+        ["4. Feature engineering", "Candidate ranking and the 26 features"],
+        ["5. Where this lives", "File map and how to reproduce it"],
+    ], [62 * mm, 107 * mm], zebra=False)
+    F.append(toc)
+    F.append(PageBreak())
+
+    # ---------------------------------------------------------------- part 1
+    F.extend(section("1", "The dataset"))
     F.append(P(
         "The task is map matching: recovering which road a vehicle actually "
         "travelled on from a GPS trace that drifts off the road network. Each "
@@ -187,11 +300,12 @@ def main() -> None:
     ], [28 * mm, 52 * mm, 85 * mm]))
     F.append(Spacer(1, 7))
 
-    F.append(P(
-        "<b>Arcs are directed.</b> A two-way street appears twice, with identical "
-        "geometry and opposite bearing, and the reference route is a sequence of "
-        "<i>directed</i> arc ids. Direction of travel is therefore part of what has "
-        "to be predicted - a fact that drives the whole feature design in section 4."))
+    F.extend(callout(
+        "Key fact &mdash; arcs are directed",
+        "A two-way street appears twice, with identical geometry and opposite "
+        "bearing, and the reference route is a sequence of <i>directed</i> arc ids. "
+        "Direction of travel is therefore part of what has to be predicted &mdash; a "
+        "fact that drives the whole feature design in section 4."))
 
     F.append(P("1.1 Partitions", "h2"))
     F.append(table([
@@ -211,7 +325,7 @@ def main() -> None:
                "comparison / final evaluation only. No trip is ever split across "
                "partitions or across CV folds.", "small"))
 
-    F.append(P("2. Exploratory data analysis", "h1"))
+    F.extend(section("2", "Exploratory data analysis"))
     F.append(KeepTogether([P("2.1 The data itself is clean", "h2"), table([
         ["Check", "Training", "Student testing"],
         ["NaN values in .track", int(dq.set_index("partition").loc["train", "nan_values_in_track"]),
@@ -328,7 +442,7 @@ def main() -> None:
                     "trips (green = start, red = end).", width=160 * mm))
 
     F.append(PageBreak())
-    F.append(P("3. From raw files to labelled examples", "h1"))
+    F.extend(section("3", "From raw files to labelled examples"))
     F.append(P("3.1 The labelling problem", "h2"))
     F.append(P(
         "<font face='Courier'>.route</font> gives the arcs traversed, but <i>not</i> "
@@ -373,7 +487,7 @@ def main() -> None:
         "small"))
 
     F.append(PageBreak())
-    F.append(P("4. Feature engineering", "h1"))
+    F.extend(section("4", "Feature engineering"))
     F.append(P("4.1 Problem framing: candidate ranking", "h2"))
     F.append(P(
         "Map matching is cast as a <b>candidate-ranking</b> problem. For every GPS "
@@ -454,8 +568,7 @@ def main() -> None:
     ]))
 
     F.append(PageBreak())
-    F.append(P("5. Where this lives in the repository", "h1"))
-    F.append(P(f"<font color='#1F6FD0'>{REPO}</font>", "small"))
+    F.extend(section("5", "Where this lives"))
 
     F.append(P("5.1 EDA", "h2"))
     F.append(table([
@@ -514,7 +627,7 @@ def main() -> None:
                "python scripts/02_eda.py&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
                "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# ~4 min", "code"))
 
-    doc.build(F, onFirstPage=page_furniture, onLaterPages=page_furniture)
+    doc.build(F, onFirstPage=cover_furniture, onLaterPages=page_furniture)
     print(f"wrote {OUT}")
     print(f"  {OUT.stat().st_size / 1024:.0f} KB")
 

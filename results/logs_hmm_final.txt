@@ -1,0 +1,25 @@
+﻿Using model artifact: tuned_xgboost.joblib
+Decoder tuning trips: 00000026, 00000079, 00000041, 00000016, 00000035, 00000032, 00000062, 00000084
+
+Selected decoder config: beta=3.0, unreachable_penalty=40.0
+
+=== student-testing trips: classifier-only vs classifier + HMM ===
+  00000000: clf 0.9428 -> hmm 0.9564 (+1.36 pp), continuity 0.970 -> 0.995
+  00000007: clf 0.9563 -> hmm 0.9970 (+4.07 pp), continuity 0.996 -> 0.999
+  00000009: clf 0.8788 -> hmm 0.9253 (+4.66 pp), continuity 0.889 -> 0.945
+  00000040: clf 0.9369 -> hmm 0.9803 (+4.34 pp), continuity 0.967 -> 0.996
+  00000052: clf 0.9580 -> hmm 1.0000 (+4.20 pp), continuity 0.946 -> 0.962
+  00000056: clf 0.9036 -> hmm 0.9793 (+7.58 pp), continuity 0.903 -> 0.966
+  00000065: clf 0.8372 -> hmm 0.8893 (+5.21 pp), continuity 0.953 -> 0.983
+  00000076: clf 0.8781 -> hmm 0.9764 (+9.83 pp), continuity 0.895 -> 0.974
+  00000077: clf 0.7307 -> hmm 0.8943 (+16.36 pp), continuity 0.935 -> 0.994
+  00000091: clf 0.8753 -> hmm 0.9554 (+8.01 pp), continuity 0.907 -> 0.970
+  figures -> C:\Users\Rishaan D\PathSnap\results\figures
+
+=== summary ===
+              stage  top1_accuracy_macro  top1_accuracy_weighted  route_continuity  arc_set_precision  arc_set_recall  arc_set_jaccard
+    classifier_only             0.889766                0.875804          0.936190           0.835841        0.969967         0.814904
+classifier_plus_hmm             0.955383                0.952789          0.978358           0.967533        0.987861         0.956394
+
+HMM decoding improved 10 trips, degraded 0, unchanged 0
+Mean Viterbi time: 0.76s per trip
