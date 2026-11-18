@@ -311,6 +311,17 @@ def main() -> None:
 
         # deployed model and config
         add(model, "artifacts/pathsnap_model.joblib")
+
+        # Alternate classifiers, so /models and model switching work in Colab.
+        # Capped by size: extra_trees is 422 MB and random_forest 350 MB, which
+        # would dwarf everything else for a feature that is nice to have.
+        MAX_ALT_MB = 25
+        for alt in sorted((ROOT / "artifacts" / "models").glob("*.joblib")):
+            mb = alt.stat().st_size / 1e6
+            if mb <= MAX_ALT_MB:
+                add(alt, f"artifacts/models/{alt.name}")
+            else:
+                print(f"  skipped {alt.name} ({mb:.0f} MB, over {MAX_ALT_MB} MB)")
         for name in ("inference_config.json", "manifest.json"):
             p = ROOT / "artifacts" / name
             if p.exists():
