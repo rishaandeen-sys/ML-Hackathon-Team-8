@@ -49,6 +49,11 @@ def inventory() -> tuple[pd.DataFrame, pd.DataFrame]:
         for tid in list_trips(pdir):
             trip = load_trip(pdir, tid)
             lon, lat, ts = trip.track[:, 0], trip.track[:, 1], trip.track[:, 2]
+            sizes = {}
+            for ext in ("track", "nodes", "arcs", "route"):
+                f = pdir / tid / f"{tid}.{ext}"
+                sizes[f"{ext}_bytes"] = f.stat().st_size if f.exists() else 0
+                sizes[f"has_{ext}"] = int(f.exists())
             dt = np.diff(ts)
             seg = haversine_m(lon[:-1], lat[:-1], lon[1:], lat[1:])
 
@@ -71,6 +76,7 @@ def inventory() -> tuple[pd.DataFrame, pd.DataFrame]:
             trip_rows.append({
                 "partition": partition,
                 "trip_id": tid,
+                **sizes,
                 "n_observations": trip.n_obs,
                 "duration_s": float(ts[-1] - ts[0]),
                 "n_route_arcs": 0 if trip.route is None else len(trip.route),
@@ -110,6 +116,11 @@ def data_quality(trips: pd.DataFrame) -> pd.DataFrame:
         for tid in list_trips(pdir):
             trip = load_trip(pdir, tid)
             lon, lat, ts = trip.track[:, 0], trip.track[:, 1], trip.track[:, 2]
+            sizes = {}
+            for ext in ("track", "nodes", "arcs", "route"):
+                f = pdir / tid / f"{tid}.{ext}"
+                sizes[f"{ext}_bytes"] = f.stat().st_size if f.exists() else 0
+                sizes[f"has_{ext}"] = int(f.exists())
             total_obs += len(ts)
             n_nan += int(np.isnan(trip.track).sum())
             n_dup_ts += int(len(ts) - len(np.unique(ts)))
@@ -138,6 +149,39 @@ def data_quality(trips: pd.DataFrame) -> pd.DataFrame:
             "route_arc_ids_out_of_range": n_route_oob,
         })
     return pd.DataFrame(checks)
+
+
+def anomalies(trips: pd.DataFrame) -> pd.DataFrame:
+    """Trips worth looking at before trusting them.
+
+    Three distinct problems show up in this dataset, and they need different
+    treatment, so they are reported separately rather than as one score:
+
+      * trailing_fix_artifact - the trip is a normal run plus a handful of
+        stray fixes recorded hours later.  Trip 00000090 is 536 observations
+        over 154,030 s, but the 42.5-hour gap sits at observation 534.
+      * low_route_coverage - the supplied .route is far shorter than the GPS
+        track, so most observations have no reference arc to learn from.
+      * large_spatial_gap - a single step between consecutive fixes long
+        enough that the decoder has to bridge it rather than step across it.
+    """
+    t = trips.copy()
+    t["route_coverage"] = t.route_length_m / t.track_length_m
+    t["gap_share_of_duration"] = t.dt_max_s / t.duration_s.clip(lower=1)
+
+    t["trailing_fix_artifact"] = (t.gap_share_of_duration > 0.5).astype(int)
+    t["low_route_coverage"] = (t.route_coverage < 0.5).astype(int)
+    t["large_spatial_gap"] = (t.step_max_m > 300).astype(int)
+    t["unreliable_labels"] = (t.label_residual_median_m > 30).astype(int)
+    t["n_flags"] = t[["trailing_fix_artifact", "low_route_coverage",
+                      "large_spatial_gap", "unreliable_labels"]].sum(axis=1)
+
+    flagged = t[t.n_flags > 0].sort_values("n_flags", ascending=False)
+    return flagged[["partition", "trip_id", "n_observations", "duration_s",
+                    "dt_max_s", "gap_share_of_duration", "step_max_m",
+                    "route_coverage", "label_residual_median_m",
+                    "trailing_fix_artifact", "low_route_coverage",
+                    "large_spatial_gap", "unreliable_labels", "n_flags"]]
 
 
 def make_plots(trips: pd.DataFrame, nets: pd.DataFrame) -> None:

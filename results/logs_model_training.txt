@@ -44,3 +44,18 @@
 
 === extra_trees (Ensemble (randomised trees)) ===
   fold 1: macro-F1 0.8903 | top-1 0.8511 | log-loss 0.1559 | 128.7s
+  fold 2: macro-F1 0.8933 | top-1 0.8473 | log-loss 0.1373 | 148.6s
+  fold 3: macro-F1 0.9221 | top-1 0.9016 | log-loss 0.1035 | 131.9s
+  fold 4: macro-F1 0.8843 | top-1 0.8480 | log-loss 0.1743 | 38.4s
+  fold 5: macro-F1 0.8807 | top-1 0.8246 | log-loss 0.1486 | 39.6s
+  -> test top-1 0.8643 | macro-F1 0.8963 | log-loss 0.1337 | continuity 0.9269
+
+=== hist_gradient_boosting (Boosting) ===
+  fold 1: macro-F1 0.9103 | top-1 0.8508 | log-loss 0.1279 | 33.4s
+  fold 2: macro-F1 0.9157 | top-1 0.8528 | log-loss 0.0944 | 21.6s
+  fold 3: macro-F1 0.9417 | top-1 0.9051 | log-loss 0.0681 | 6.6s
+  fold 4: macro-F1 0.9000 | top-1 0.8388 | log-loss 0.1323 | 7.1s
+  fold 5: macro-F1 0.8935 | top-1 0.8272 | log-loss 0.1102 | 7.9s
+  -> test top-1 0.8707 | macro-F1 0.9225 | log-loss 0.0890 | continuity 0.9317
+
+=== mlp (Neural network) ===

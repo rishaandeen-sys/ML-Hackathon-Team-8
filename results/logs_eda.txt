@@ -89,16 +89,6 @@
   student_test/00000076: 1486 obs, 56027 arcs
   student_test/00000077: 3911 obs, 9622 arcs
   student_test/00000091: 874 obs, 12303 arcs
-python.exe : C:\Users\Rishaan D\PathSnap\.venv\Lib\site-packages\folium\raster_layers.py:129: UserWarning: CartoDB 
-tiles now require an API key. Please provide one to continue using the tiles. You can request the key at 
-https://carto.com/basemaps/apikey/.
-At line:1 char:346
-+ ... \PathSnap"; & ".venv\Scripts\python.exe" -I scripts\02_eda.py 2>&1 |  ...
-+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: (C:\Users\Rishaa...semaps/apikey/.:String) [], RemoteException
-    + FullyQualifiedErrorId : NativeCommandError
- 
-  tiles = tiles.build_url(fill_subdomain=False, scale_factor="{r}")  # type: ignore
 
 Running data-quality checks...
 
